@@ -205,3 +205,11 @@ cython_debug/
 marimo/_static/
 marimo/_lsp/
 __marimo__/
+
+# --- MEA CartPole project ---
+# MCS manual: redistribution not allowed. Download it from multichannelsystems.com into References/.
+Project-Documentation/References/MCS_*
+# Saved publisher web pages: use the .txt copies and DOI links instead.
+Project-Documentation/References/*.html
+# macOS Finder files
+.DS_Store

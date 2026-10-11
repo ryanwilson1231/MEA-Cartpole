@@ -1,0 +1,1346 @@
+Robbins A, Schweiger HE, Hernandez S, et al. Goal-directed learning in cortical organoids. Cell Reports 45 (2026).
+https://doi.org/10.1016/j.celrep.2026.116984 · Open access, CC BY 4.0.
+Article text extracted from the publisher's web page; figures, references and equations are not included (equations may be garbled).
+Read the full article with figures at the DOI link.
+Highlights
+•
+Organoids learn pole balancing through adaptive electrical training
+•
+Stimulus-evoked causal connectivity predicts task performance
+•
+NBQX + APV blockade abolishes learning, confirming glutamatergic transmission requirement
+Summary
+Experimental neuroscience techniques are advancing rapidly, with developments in high-density electrophysiology and targeted electrical stimulation enabling single-cell-resolution recording and stimulation. Cortical organoids derived from pluripotent stem cells show great promise as
+in vitro
+models of brain development, function, and disease. In this work, we demonstrate goal-directed learning in brain organoids through feedback-driven neural plasticity. We developed a closed-loop electrophysiology framework to embody mouse cortical organoids into a pole-balancing task (“cartpole”) and evaluated performance improvements when delivering high-frequency training signals. We found that, for most organoids, training signals chosen by artificial reinforcement learning yield better performance than randomly chosen training signals or no training signal, yet improvements do not persist after the 45-min rest period. We further show that training-induced plasticity requires intact glutamatergic transmission, as pharmacological blockade of AMPA and NMDA receptors abolished performance improvements. This systematic approach to studying goal-directed neural plasticity mechanisms
+in vitro
+opens new possibilities for neural rehabilitation and biological computation.
+Graphical abstract
+Keywords
+biocomputing
+organoid intelligence
+artificial intelligence
+reinforcement learning
+electrophysiology
+electrical stimulation
+in vitro
+cortical organoid
+closed-loop control
+causal connectivity
+Research topic(s)
+CP: stem cell research
+CP: neuroscience
+Reading Assistant
+Settings
+Select a default view:
+Icon
+Search box
+Window
+AI-generated content may vary in quality.
+Learn more.
+Actions you could take:
+Summarize this article
+Summarize experiments
+Introduction
+The brain has an unmatched capability for intelligent and dynamic information processing—deep artificial neural networks require over five layers to achieve an adequate approximation of a single biological neuron
+1
+—yet biological neural networks operate at a fraction of the power consumption of artificial systems.
+2
+Understanding how they process and dynamically adapt to information has profound implications, from developing targeted stimulation protocols for neural rehabilitation to creating energy-efficient bioelectronic computation.
+3
+Reinforcement learning concepts provide a high-level blueprint for learning
+in vivo
+,
+4
+,
+5
+,
+6
+,
+7
+and low-level learning rules including Hebbian plasticity and synaptic dynamics have been studied extensively.
+8
+,
+9
+,
+10
+,
+11
+,
+12
+,
+13
+,
+14
+However, despite extensive research at both scales, we lack a clear understanding of how low-level synaptic modifications give rise to goal-directed learning. This gap limits our ability to harness biological learning.
+Studies of neural adaptation
+in vitro
+could reveal these mesoscale learning principles. Pluripotent stem cell-derived brain organoids are an ideal model for
+in vitro
+learning, as they recapitulate key aspects of neuronal development, including diverse cell types and complex electrophysiological circuitry.
+15
+,
+16
+Although these organoids can model many aspects of development, they are typically grown without key inputs from other brain regions or sensory organs,
+17
+,
+18
+limiting their ability to model
+in vivo
+neurodevelopmental processes that depend on such interactions. High-density microelectrode arrays (HD-MEAs) can both record from and stimulate organoids at single-cell resolution,
+19
+enabling precise control of the electrophysiological aspects of an organoid’s interactions with its surroundings. This fine-grained control allows us to systematically perturb neuronal networks within organoids and longitudinally observe their responses, providing a platform for iterative investigation of learning at the circuit level.
+Within the last three decades, labs have used varying methodologies of electrophysiological stimulation in efforts to harness biological computation through closed-loop interaction.
+20
+,
+21
+,
+22
+Pioneering work repurposed vestibular circuits of a lamprey to control a robot,
+23
+leading to numerous studies embodying cultures into closed-loop tasks.
+24
+,
+25
+,
+26
+,
+27
+,
+28
+,
+29
+,
+30
+,
+31
+Subsequently, different frameworks for
+in vitro
+neural adaptation have emerged, influenced by factors like species, brain regions, neuron distributions, and network architectures. Early work accomplished supervised learning through slow-frequency stimulation, which evoked network bursts, ceasing stimulations when the desired effect was achieved,
+32
+,
+33
+formalized as learning by stimulation avoidance.
+34
+Many approaches instead use tetanic (high-frequency) stimulation patterns as training signals.
+9
+,
+20
+These tetanic electrical stimulations (>5 Hz) have been shown to induce functional and stimulus-evoked changes for pattern recognition
+35
+and burst information
+9
+and have been explored with respect to long-term potentiation (LTP)/long-term depression (LTD)
+36
+,
+37
+,
+38
+,
+39
+and embodied tasks.
+25
+,
+26
+,
+28
+Tetanic stimulation is thought to induce changes through associative mechanisms due to increased neural activity.
+More recent work on reservoir computing with organoids, which leverages machine learning readout layers, has demonstrated success in unsupervised tasks, such as predicting dynamical equations and classifying speech snippets,
+22
+as well as a control task.
+30
+The free energy principle has been proposed as a theoretical framework to explain success in blind source separation tasks
+40
+,
+41
+and control in a simplified “pong” environment,
+21
+drawing parallels to artificial reinforcement learning approaches to curiosity.
+42
+However, other work has shown that even inanimate hydrogels, when electrically embodied in a “pong” task space, can demonstrate improvement,
+43
+highlighting the importance of appropriate controls and careful interpretation and investigation of apparent learning in these systems. A key insight from previous studies is that repeated and formulaic high-frequency stimulation patterns can induce persistent shifts in network dynamics.
+20
+,
+37
+These shifts effectively reconfigure the network’s input-output mapping, potentially enabling real-time adaptation. Building on this principle, we hypothesized that by systematically selecting which neural pairs to stimulate on the basis of task performance, we could guide these network reconfigurations toward improved control policies.
+While previous work has demonstrated that stimulation can modify synaptic plasticity, key questions remain about the optimal selection of target neurons, stimulation frequencies, and timing. In this paper, we focus on feedback-driven neural plasticity—on the scale of seconds to tens of minutes—as a form of short-term learning. We propose a systematic approach to characterizing and training biological controllers using high-frequency stimulation within a task-based framework (
+Figure 1
+). We embody cortical organoids into an environment that simulates the classic problem of inverted pendulum stabilization
+44
+(similar to balancing a ruler vertically on your hand). In this problem, commonly known as “cartpole,”
+45
+,
+46
+a simulated two-dimensional cart must be moved along the horizontal axis to balance a vertical pole, which is attached by a hinge. Unlike pattern-recognition tasks, cartpole requires continuous, active stabilization of an inherently unstable system where small lapses in control lead to failure—making it particularly suitable for assessing both real-time processing and short-term adaptation. We demonstrate that organoids can significantly improve their performance on this task through optimized training patterns and show that this form of learning depends on glutamatergic neurotransmission, as it ceases when pharmacological blockers of α-amino-3-hydroxy-5-methyl-4-isoxazolepropionic acid (AMPA) and N-methyl-D-aspartate (NMDA) receptors are administered.
+Figure 1
+Experimental overview for
+in vitro
+learning
+Show full caption
+(A) Schematic of multi-phase experimental design. The “record” phase uses a spontaneous recording to locate and characterize putative neural units. The “stimulate” phase uses electrical stimulation on each of these units to measure stimulus-evoked activity through different temporal ranges. Human experimenters then select putative neuron roles from the causal connectivity analysis. The “train” phase consists of repeated interactions with the simulated dynamical environment, organized into episodes.
+(B) Flowchart of each episode of the training loop. The virtual environment is simulated at a fixed frame rate while interacting with the organoid in a closed loop (yellow box). The episode is terminated when the pole falls into an unrecoverable position. Finally, depending on the training paradigm, a pattern of pulses may be delivered.
+Results
+Multi-phase experimentation
+We developed a framework consisting of three key experimental phases to achieve goal-directed learning in cortical organoids: (1) network characterization through spontaneous recording, (2) stimulus-response mapping through targeted electrical stimulation, and (3) closed-loop training in the dynamical task (
+Figure 1
+A). Each phase builds upon automated analysis from the previous phase to systematically identify and interface with relevant neural circuits. This approach enables us to first characterize the network’s causal connectivity before attempting to dynamically modify the stimulus-evoked responses through training. The framework provides millisecond-precision control to minimize latency between the neural culture and the virtual environment, and it also supports reproducibility through an automated analysis pipeline.
+To implement this framework, we generated mouse cortical organoids to serve as a biological substrate for learning. Functional neural networks were developed through directed patterning and self-organization (
+Figure 2
+A) of three-dimensional aggregates from embryonic stem cells into structured neural tissue (
+Figure 2
+B) that recapitulates key features of cortical architecture.
+47
+By day 10, the networks showed dorsal-forebrain-specified radial glia (Pax6) and medial ganglionic eminence progenitors (Nkx2.1) (
+Figure 2
+C). The tissue markers of proper differentiation at day 30 express cortical-subtype-specific markers, including upper- (Satb2 and Brn2) (
+Figure S1
+A) and deep- (TLe4 and Ctip2) (
+Figure S1
+B) layer excitatory projection neurons along with inhibitory neurons (Sst) (
+Figure S1
+C), dendritic processes (Map2), and astrocytes (Gfap) (
+Figure S1
+D). We specifically chose cortical patterning due to the cortex’s well-established role in adaptive information processing and its ability to encode, decode, and modify responses to novel inputs.
+48
+The organoids were interfaced with HD-MEAs
+49
+,
+50
+,
+51
+(
+Figures 2
+D–2F), providing precise spatiotemporal control over the culture with a high number of putative neuronal units for potential computation.
+Figure 2
+Organoid generation and interaction with electrical interface
+Show full caption
+(A) Schematic of the protocol for generating mouse embryonic stem cell (ESC)-derived cortical organoids.
+(B) Bright-field images of organoids over development; images were taken at varying magnifications.
+(C) Immunohistochemistry of day 10 cortical organoids show the presence of Pax6 (radial glia) and Nkx2.1 (medial ganglionic eminence). Scale bar, 150 μm.
+(D) Illustration of organoid plated on HD-MEA chip. Scale bar, 200 μm.
+(E) Heatmap of activity from electrode configuration overlaid on the HD-MEA and a representative plot of the electrode configuration. Scale bar, 200 μm.
+(F) Representative plot of the waveforms from individual neuronal units overlaid on electrode configuration.
+Neural configuration
+Our targeted approach to cortical organoid computation focuses on characterizing capabilities within small subcircuits. To do this, we require a few separate components. First, we begin by capturing spontaneous neural activity in the record phase, using it to identify locations of putative neurons and the best electrodes to stimulate them. As shown in a previous study, electrically stimulating the axon initial segment yields the best chance at triggering action potentials, with electrode locations showing higher recorded amplitudes, providing better stimulation efficacy.
+52
+The spontaneous activity recording is used to generate a spatial map of putative neural unit locations (
+STAR Methods
+under “spontaneous recording and neural unit identification”) through a metric incorporating firing rate and action potential amplitude (
+Figures 2
+E and 2F). We then perform signal averaging triggered by the peak amplitude of detected action potentials at these locations to extract spatiotemporal footprints and remove duplicates for each unit. Larger amplitudes yield neurons that are easier to identify in real-time experiments. This analysis enables us to reliably detect neural activity on distinct electrodes throughout the experiment and identify optimal stimulation sites based on peak amplitude locations.
+To map causal information flow through these neural circuits, we characterized stimulus-response relationships during the stimulate phase by delivering bi-phasic pulses to each identified neural unit one by one for 50 repetitions (delivered at 2 Hz) as seen in
+Figures 3
+A and 3C. We used automated analysis to quantify three major temporal response signatures: first-order causal connectivity representing direct neural pathways (
+Figure 3
+B), multi-order causal connectivity showing network-mediated responses (
+Figure 3
+D), and probability of evoking network-wide bursts (
+Figure S2
+). Based on these metrics, we created a neural configuration defining units for encoding (input), decoding (output), and training. We selected two encoding and two decoding units, prioritizing first-order connectivity from encoding to decoding units, and used multi-order connectivity as a secondary preference (
+Figures 3
+E and 3F). Units exhibiting frequent network bursting responses were deemed less suitable as encoding units since widespread activation could interfere with more fine-grained control. After encoding and decoding units were selected, between 5 and 12 training units were selected, independent of connectivity patterns, to explore optimal training stimulations.
+Figure 3
+Electrical stimulation characterization and causal connectivity
+Show full caption
+(A) Stimulus-evoked responses showing (top) all 50 overlapping voltage responses of unit 7 resulting from stimulating unit 6 and (bottom) spike event latency from stimulation raster combined with peri-stimulus time histograms. Red indicates the first detected spike event for each response. This example highlights short-term responses. Inset shows the first 20 ms.
+(B) First-order causal connectivity heatmap displaying the probability that stimulation of a neural unit (
+x
+axis) evokes a response in another unit (
+y
+axis) within 18 ms.
+(C) Similar to (A), highlighting a multi-order bursting response.
+(D) Multi-order causal connectivity heatmap showing the mean response count within 200 ms for stimulation of each neural unit (
+x
+axis) on other units (
+y
+axis).
+(E) Network graph showing first-order causal connectivity with assigned neural roles. Edge weights represent the probability of evoking a direct response within 18 ms. Node positions are schematic and do not reflect spatial locations on the MEA.
+(F) Similar to (E), but showing multi-order connectivity patterns. Edge weights represent mean spike count within 200 ms, capturing network-mediated responses that may involve polysynaptic pathways through intermediate neurons.
+Training paradigm
+Using our characterized neural configuration, in the training phase, we trained organoids to balance a pole on the cartpole task, where an inverted pendulum attached to a cart must be balanced by applying horizontal forces (between −10 N [newtons] and 10 N) to the cart (
+Figure 1
+,
+Video S5
+). Each episode represents a single attempt at balancing the pole until failure (defined as the pole exceeding a terminal angle of ±16°, which represents a nearly unrecoverable state) and typically lasts for tens of seconds depending on performance. The electrophysiological interaction between the environment simulation and the organoid was specified by a rate-coding scheme
+7
+,
+53
+,
+54
+for both encoding pole angle (stimulating the input units) and decoding horizontal forces (reading smoothed spike counts of the output units) to apply to the cart. This scheme was employed for each discrete time step within an episode (
+STAR Methods
+under “rate-coding scheme for encoding and decoding”). Each episode ran from a random initialization until failure. A series of consecutive episodes is called a training cycle. We evaluated the performance within a training cycle as the amount of time balanced per episode. A result indicating learning within a training cycle showed an increase in the duration of episodes. To allow for both learning and recovery, experiments were organized typically into 15-min training cycles with 45-min rest periods. The organoid received real-time sensory information about pole angle and provided motor commands throughout each episode. However, training signals—the high-frequency stimulation patterns that modify neural dynamics—were delivered only at episode completion and only when a performance criterion was met. This design ensures that training signals cannot directly influence task performance through immediate artifacts or interference but instead must modify the organoid’s neural dynamics and information processing during subsequent episodes. Specifically, training signals were administered whenever the 5-episode mean performance did not exceed the 20-episode mean, allowing the system to focus on larger-scale adaptations while filtering out the impact of individual episodes of poor performance. If the time balanced never surpassed 10 s within the first training cycle, different encoding/decoding units were selected. See the
+STAR Methods
+under “cartpole task environment” for further details on training and
+Figure S7
+for configuration layouts.
+Video (9.05 MB)
+Video S5. Overview of the experimental process, related to Figure 1
+Our approach leverages a fundamental property of neural networks: high-frequency stimulation can induce shifts in network dynamics that persist beyond the stimulation period.
+9
+,
+37
+By delivering specific paired-pulse patterns to designated training neurons at episode completion, we aim to perturb the network state in ways that modify the input-output transformation between encoding and decoding units. The adaptive selection of these perturbations—choosing which neural pairs to co-activate based on recent performance—allows us to explore different network configurations, effectively searching for control policies that improve task performance. Each stimulation pattern acts as a targeted perturbation that can shift the network’s dynamical landscape, and by tracking which perturbations lead to better balancing, we guide the system toward more effective configurations. Therefore, we call these network perturbations training patterns, and we optimize the training pattern selection using artificial reinforcement-learning principles.
+Superior performance of adaptive training signals over random and null conditions
+To investigate whether training signals sent to the training neurons could modify information processing between input and output neurons, we compared three distinct experimental conditions: (1) “null,” without stimulation; (2) “random,” with stimulation of five randomly chosen training units (neurons); and (3) “adaptive,” with stimulation of a pair of training units (neurons) selected through reinforcement learning with eligibility traces—a computational method that tracks which neuron pairs have previously led to performance improvements and preferentially selects those pairs for future training while gradually forgetting older associations (
+Figures 4
+A and 4B). We refer to either a quintuple or a pair of units selected for training stimulation feedback as a “training pattern.” We chose to stimulate randomly ordered quintuples to replicate similar conditions from previous studies.
+20
+,
+21
+Pairs instead of quintuples were used in the adaptive stimulation paradigm to both reduce the total number of possible training signals and test whether a more fundamental pulse would enable modifications. Refer to the
+STAR Methods
+under “training signal paradigms” for a detailed explanation of the training options tested. In each experiment, we tested two or more of these conditions in sequential 15-min cycles (e.g., null → random → adaptive) with one condition per cycle.
+Figure 4
+C showcases a representative experiment where the adaptive condition (green) repeatedly achieved superior performance, improving from a baseline of 10 s to over 60 s of balanced control across multiple cycles (see
+Videos S1
+,
+S2
+, and
+S3
+for examples of each condition). This improvement is quantified in the cycle-averaged performance metrics (
+Figure 4
+D). The emergence of effective control behavior becomes evident when examining the pole angle trajectories over time (
+Figure 4
+E). The effects of training stimulation delivered when the 5-episode mean performance dropped below the 20-episode mean are illustrated for three example cycles (
+Figure 4
+F).
+Figure 4
+Training paradigms enable task-specific learning and performance evaluation
+Show full caption
+(A) Square-wave bi-phasic pulse shape, 400 μV peak to peak, 400 μs period positive first. Training patterns consist of multiple pulses on separate channels spaced by 10 ms within each pulse pattern, repeating the pattern at 100 ms or 10 Hz.
+(B) Description of the three separate training paradigms: null, no stimulation; random, five-pulse patterns with the order randomly sampled from all possible training units; adaptive, two-pulse patterns chosen based on performance improvements attributed to specific stimulations.
+(C) An experiment where the training paradigm is alternated, showing performance (time balanced in seconds) indicated by color (blue, null; red, random; green, adaptive). Performance is displayed as both raw measurements (transparent) and smoothed performance (solid lines). Each cycle lasts 15 min, with a 45-min rest between cycles for 21 cumulative hours for this experiment. Episodes in progress at cycle end are terminated, which may result in lower final episode durations.
+(D) Mean and interquartile range of performance per training paradigm for the experiment in (C).
+(E) Overlaid trajectories for each episode of the pole angle across time within selected training cycles. X’s mark episode terminations (when the pole fell beyond the allowed angle range). Colors indicate temporal progression within each cycle, with blue representing the early episodes and pink representing the late episodes.
+(F) Plots of individual cycles, with each episode shown as scatter points and training delivery times shown. The darker line denotes the five-episode trailing mean. Training signals were delivered in the random and adaptive cases when the performance was not improving.
+Video (7.22 MB)
+Video S1. Example of adaptive training, related to Figure 4
+Video (6.26 MB)
+Video S2. Example of random training, related to Figure 4
+Video (891.95 KB)
+Video S3. Example of null training, related to Figure 4
+We evaluated 19 cortical organoids from eight batches across 41 experiments (38 cartpole training and 3 pharmacological intervention), totaling over 125 h of recorded activity. For cartpole training experiments, organoids underwent one to six experiments each (median: 2) spanning 3–75 cycles (median: 27). The most extensive experiment ran continuously over 48 h. To quantify consistent performance, we used the 90th percentile of episode duration (time balanced) within each cycle as our primary metric. Organoids were deemed proficient if time balanced exceeded 3 standard deviations above the mean performance of the best of five
+in silico
+purely stochastic neural firing patterns (
+Figure S4
+).
+We compared distributions of the 90th percentile performance from each cycle of these training paradigms (null,
+n
+= 130; random,
+n
+= 67; adaptive,
+n
+= 91). We found that the adaptive training significantly outperformed both random and null cases (
+p
+= 0.0081 and
+p
+= 1.87 × 10
+−7
+, respectively, Dunn’s test with Holm correction). Random stimulation did not significantly outperform the null case (
+p
+= 0.079). While 23.1% of cycles reached proficiency under adaptive training, only 4.5% did so with random stimulation and 2.3% with no stimulation.
+Given the superior performance of adaptive training, we conducted extended experiments using only the adaptive paradigm without cycling between conditions. We will refer to this training strategy as “continuous adaptive” training.
+Figure 5
+A demonstrates sustained learning across multiple hours, with performance consistently exceeding the proficiency threshold. Notably, while organoids demonstrated clear performance improvements within individual training cycles, these improvements did not consistently persist across the 45-min rest periods between cycles. The temporal pattern of performance peaks during training periods shows clear autocorrelation (
+Figure S3
+), suggesting underlying state-dependent changes occurring over multi-hour periods.
+Post hoc
+analysis revealed that certain pulse combinations yielded consistently higher improvement metrics (
+Figure 5
+B), measured as the cumulative change in time balanced following each training signal delivery. These highly effective patterns—identified by improvement exceeding random-walk bounds—often shared common training units.
+Figure 5
+Continuous adaptive training reveals learning dynamics and control policy development
+Show full caption
+(A) Performance plot of the adaptive training paradigm running continuously for all cycles. Threshold indicates 20.5 s, which was designated as “proficient” (
+Figure S4
+).
+(B) Improvement metric for various training patterns. Line color denotes first neuron in training pattern, circle color denotes second neuron in training pattern. Gray-shaded envelope designates Brownian motion as explained in
+Methods S1
+, “improvement metric.” Roman numerals indicate highest maximum improvements.
+(C) Real-time adaptive selection of training patterns based on reinforcement learning. Top: performance (time balanced) throughout the experiment. Bottom: evolution of value estimates for all possible two-unit training patterns, where color intensity indicates selection probability at each time point. Training patterns are sampled according to these probabilities, which are continuously updated based on performance outcomes. The black markers indicate delivery times each pattern, and the red boxed regions are explored in (D).
+(D) Example showing how value estimates adapt based on performance feedback. Two training patterns (purple and orange) demonstrate the learning mechanism: the purple pattern’s value initially does not change but later increases after yielding performance improvements. The orange pattern’s value increases when yielding improvement and then later decreases due to performance loss. These illustrate how the algorithm adapts to effective patterns.
+(E) Sigmoid estimations of the organoid control policy through one training cycle. Early episodes show no cohesive structure; late episodes approach a sigmoid centered around 0°.
+(F) Early episode (first third) dynamics of how the spike count difference between the output units responds to input frequencies dependent on the cartpole’s angle. These responses are short and show less-coherent flow patterns.
+(G) Similar to (F), but late episodes (last third) show multiple round trips on the attractor and much higher density around a preferred state near 0°. Late episodes also have less variability in initial responses.
+To elucidate how the adaptive training paradigm optimizes its two-unit stimulation patterns,
+Figure 5
+C visualizes the dynamic tracking of how the algorithm weights each possible training pattern during an experiment with multiple cycles. Unlike the random paradigm, which always samples five-unit patterns randomly, the adaptive method uses eligibility-trace-based temporal difference reinforcement learning described in the
+STAR Methods
+under “training signal paradigms” to assign higher weights to training patterns that have historically contributed to performance improvements. The inset highlights how individual pulse patterns can drive either improvement or deterioration at different time points, likely reflecting differing network states, emphasizing the importance of adaptive training signal selection.
+We visualize a representative proficient organoid’s control strategy in two complementary ways. A simplified sigmoid policy estimation (
+Figure 5
+E) shows the emergence of structured control centered around the vertical pole position, while the complete neural response dynamics show how the organoid’s motor output patterns relate to sensory input states (
+Figures 5
+F and 5G) and reveal richer dynamics. These flow fields—which capture how neural responses relate to the pole’s state through time—show adaptation toward an off-center balancing point that incorporates both angle and angular velocity information. This suggests the organoid’s control strategy becomes sensitive to the pole’s dynamic state rather than responding solely to instantaneous position (see
+Figure S5
+and
+Video S4
+). Early episodes show scattered, inconsistent responses, but late episodes demonstrate coherent control strategies with multiple stable oscillation patterns and increased activity density near this preferred state. In late episodes, the organoid’s control policy becomes more structured and consistent, with episodes converging toward consistent initial starting conditions (
+Figures 5
+F and 5G). The input-output mappings show that neural responses develop stable trajectories that reflect systematic control strategies,
+55
+with well-trained organoids repeatedly cycling through these consistent response patterns during extended balancing periods. Adaptive training did not simply increase decode unit firing rates (
+Figure S6
+) but reorganized them in a performance-dependent manner.
+Video (912.46 KB)
+Video S4. Policy plane evolution during training, related to Figure 5
+These improvements in control strategy were reflected in overall performance metrics—continuous adaptive experiments achieved proficiency in 46.4% of cycles, substantially higher than the 23.1% rate observed in adaptive alternating experiments (
+Figures 6
+A and 6B). In a comparison of distributions of the 90th percentile performance from each cycle, continuous adaptive significantly outperformed all cases (
+p
+= 7.07 × 10
+−20
+,
+p
+= 2.08 × 10
+−8
+, and
+p
+= 8.11 × 10
+−3
+for null, random, and adaptive, respectively, Dunn’s test with Holm correction). We analyzed correlations between the best 90th percentile performance for each experiment and a range of connectivity metrics derived from both spontaneous and stimulus-evoked activity (see
+STAR Methods
+under “stimulus-response characterization”). Our first-order causal connectivity metric proved especially predictive of performance outcomes (
+R
+2
+= 0.446,
+p
+= 6.0 × 10
+−4
+,
+n
+= 30), substantially outperforming traditional functional connectivity as calculated by the spike-time tiling coefficient within 20 ms
+56
+(
+R
+2
+= 0.288,
+p
+= 0.004,
+n
+= 32) (
+Figures 6
+C and 6D). This advantage was most pronounced in proficient experiments, where causal connectivity showed remarkably strong correlation with learning performance (
+R
+2
+= 0.59,
+p
+< 0.01,
+n
+= 12), whereas functional connectivity showed a weaker correlation (
+R
+2
+= 0.20,
+p
+= 0.14,
+n
+= 12). The strength of first-order causal connections, which guided our neural configuration selection, emerged as a key predictor of learning capability (
+Figure 6
+E). Output units’ ability to evoke multi-order responses (
+p
+< 0.01) and network-wide bursts (
+p
+< 0.01) correlated with performance, suggesting that output units’ capacity to recruit broader network activity may facilitate adaptive control. Other connectivity metrics, including burst probability and functional coupling between non-input/output units, showed weaker or non-significant correlations, further supporting the importance of first-order causal pathways in enabling successful learning.
+Figure 6
+Statistical validation and neural correlates of learning performance
+Show full caption
+(A) Boxplots of each condition with interquartile range where each data point represents the 90th percentile performance within a cycle (null,
+n
+= 130 cycles from 12 organoids from five batches; random,
+n
+= 67 cycles from 9 organoids from five batches; adaptive,
+n
+= 91 from 12 organoids from five batches; continuous adaptive,
+n
+= 138 from 7 organoids from four batches), showing significant improvements in adaptive stimulation vs. both random and null cases (Dunn’s test with Holm correction, random vs. null,
+p
+= 0.079; adaptive vs. null,
+∗∗∗
+p
+= 1.87 × 10
+−7
+; continuous adaptive vs. null,
+∗∗∗
+p
+= 7.07 × 10
+−20
+). We separate when adaptive was used for each cycle within an experiment vs. when it was alternated. The threshold of “proficient” is shown as a red line.
+(B) Percentage of proficient cycles above the threshold (continuous adaptive, 46.4%; adaptive, 23.1%; random, 4.5%; null, 2.3%).
+(C) Each experiment’s best 90th percentile performance predicted by functional connectivity calculated in the baseline recording (
+R
+2
+= 0.288,
+p
+= 0.004,
+n
+= 32 experiments from 16 organoids from seven batches) along with regression lines fit to both proficient and not proficient cycles.
+(D) Similar to (C), but with the first-order causal connectivity metric showing stronger predictive power (
+R
+2
+= 0.446,
+p
+= 6.0 × 10
+−4
+,
+n
+= 30 experiments from 16 organoids from seven batches).
+(E) Correlation of features with 90th percentile performance (
+n
+= 30 experiments from 16 organoids from seven batches). Direct causal connections show strongest correlation (
+∗∗∗
+p
+= 2.0 × 10
+−4
+), followed by multi-unit evoked response (
+∗∗
+p
+= 2.0 × 10
+−3
+) and burst percentage (
+∗∗
+p
+= 8.0 × 10
+−3
+) in output units.
+i
+and
+o
+represent the input and output units, respectively. Sample sizes differ among (C)–(E) due to missing causal connectivity data in two experiments.
+Statistical significance:
+∗
+p
+< 0.05,
+∗∗
+p
+< 0.01, and
+∗∗∗
+p
+< 0.001.
+These results demonstrate both the effectiveness of adaptive training and the importance of proper neural configuration selection. While high-frequency stimulation generally enhanced network performance over baseline, adaptive selection of training signals led to significantly better outcomes than random selection, with proficiency rates doubling in continuous experiments. The state-dependent nature of each cycle’s 90th percentile performance suggests persistent network states conducive to adaptation rather than independent and isolated initializations.
+Glutamatergic transmission is essential for learning
+To investigate the underlying mechanisms of the observed learning capabilities, we performed pharmacological intervention experiments using glutamatergic receptor antagonists. Application of the AMPA/kainate receptor antagonist 2,3-dioxo-6-nitro-1,2,3,4-tetrahydrobenzo[f]quinoxaline-7-sulfonamide (NBQX; 20 μM) and NMDA receptor antagonist D-2-amino-5-phosphonopentanoic acid (APV; 100 μM)
+4
+,
+57
+significantly impaired the ability of organoids to balance the pole (
+Figure 7
+A). Mixed effects modeling across three organoids revealed that drug application reduced performance by 10.38 s (95% CI −13.52 to −7.25,
+p
+< 0.001), representing a 64% decrease from baseline performance regardless of pre-drug performance (
+Figure 7
+B;
+Table S1
+). Following washout of the antagonists, performance substantially recovered, with only a non-significant residual deficit of 1.51 s (95% CI −4.48 to 1.45,
+p
+= 0.318) compared with baseline. These results demonstrate that glutamatergic transmission through both AMPA/kainate and NMDA receptors is necessary for the goal-directed learning observed in our experiments and that this effect is reversible through washout.
+Figure 7
+NBQX and APV abolish learning capabilities
+Show full caption
+(A) Three organoid experiments (top, middle, and bottom) demonstrating the effects of glutamatergic receptor antagonists on task performance. Performance is measured as time balanced (seconds) over experimental time (hours). All organoids show proficient performance prior to drug application (pre), complete loss of learning during NBQX (20 μM) and NMDA receptor antagonist APV (100 μM) treatment (orange-shaded area), and recovery of baseline performance after washout (post). Circles indicate the 90th percentile performance in each cycle.
+(B) The 90th percentile performance normalized to pre-drug baseline. Each color represents a different organoid as shown in (A) (purple, green, or gray). Vertical dashed lines demarcate experimental phases (pre, during, and post) and are colored with their respective organoid color. During treatment, 90th percentile performance decreases to less than 30% of baseline performance and recovers after washout over varying timescales across organoids. Markers denote the 90th percentile values for each cycle (
+n
+= 38 cycles from three organoids from one batch (three experiments): pre,
+n
+= 3; during,
+n
+= 6; post,
+n
+= 29; total 3,193 episodes).
+Discussion
+Our results demonstrate goal-directed learning in brain organoids using intentionally selected circuits, establishing a new paradigm for biological computation beyond the successful unsupervised reservoir learning approach demonstrated by Cai et al.
+22
+Organoids naturally recapitulate neural development and, to some extent, circuit architecture in three-dimensional space, providing a highly parallel substrate for spatial computation. HD-MEAs enable millisecond-precision closed-loop control, allowing us to map specific computational roles to individual neurons despite capturing only a subset of the total network activity. Using a novel multi-phase experimental approach, we designed a rapid analysis pipeline that enables iterative experimentation, characterizing neural responses and adjusting parameters within minutes between experimental phases. This capability for systematic investigation mirrors the rapid prototyping that accelerated artificial neural network development. Mouse cortical organoids, with their quick development cycle,
+58
+,
+59
+provide an ideal test bed for this engineering approach to biological computation. This framework opens new possibilities for both fundamental neuroscience and hybrid bioelectronic systems.
+Unlike previous
+in vitro
+learning studies focused on pattern recognition or fixed behaviors,
+20
+,
+22
+our framework tackles a continuously unstable control problem requiring active state maintenance, demonstrating that biological circuits can optimize complex dynamical systems even without canonical reward circuitry. Our experimental design—delivering training patterns only at episode completion and selecting training units distinct from input/output units—isolates the learning effects. Random stimulation did not significantly improve performance over baseline. However, our adaptive training paradigm, which optimized training signal selection based on performance changes, significantly outperformed both random and null conditions, achieving proficiency in 46.5% of continuous cycles. This demonstrates that biological neural networks can be systematically modified through precise electronic control.
+Our adaptive approach represents a hybrid form of reinforcement learning that bridges artificial and biological systems. We use artificial reinforcement learning algorithms with eligibility traces
+60
+to optimize the selection of training signals delivered to biological neural networks. In this framework, the reinforcement learning algorithm learns which pairs of stimulation sites, when activated together, often improve task performance over time. Unlike canonical biological reinforcement learning, which relies on neuromodulatory signals such as dopamine,
+61
+our system delivers direct electrical stimulation to selected neurons based solely on task performance metrics. The organoid’s neural dynamics adapt in response to these externally imposed training patterns, improving its input-output mappings for pole balancing. This adaptation likely occurs through stimulation-induced shifts in network dynamics where each training pattern effectively explores a different configuration of the network’s dynamical landscape, with successful patterns reinforcing beneficial network states.
+9
+,
+20
+Interestingly, extensive work has shown that cortical neurons, particularly in the prefrontal and orbitofrontal cortex, can represent reward expectation and value signals,
+62
+,
+63
+suggesting that cortical circuits may possess intrinsic mechanisms for performance-based optimization. Our results demonstrate that such circuits can be shaped toward specific behavioral goals through systematic electrical stimulation, potentially mimicking endogenous processes by which cortical networks identify and strengthen task-relevant connections.
+13
+The effectiveness of training signals showed clear state dependence, building on observations from Bakkum et al.
+20
+that different stimulation patterns succeed at different times. This suggests an interaction between training signals and recent activity history, providing an opportunity to explore fundamental stimulus-based learning rules at the circuit level. We observed rapid modulation of control policies through these brief training cycles while also discovering temporal correlation in the network’s ability to achieve high performance over multi-hour periods, revealing distinct timescales of network modulation. Such adaptation across multiple timescales demonstrates a key advantage of biological systems for hybrid bioelectronic applications: while our training signals enabled rapid tuning of task-specific responses, the observed long-term state dependencies suggest potential for shaping underlying network dynamics to support and enhance these rapid adaptations. Training adaptations in different organoids led to similar control strategies that effectively model inverted pendulum dynamics, even though the details of the neural connectivity in each organoid differ greatly. This convergence toward functionally similar input-output mappings demonstrates the organoids’ ability to develop equivalent control policies through different underlying neural pathways.
+Causal connectivity analysis reveals how interfacing with the network influences learning capability, providing a framework for predicting and optimizing performance. The strong predictive power of first-order causal connectivity (
+R
+2
+= 0.59 in proficient cycles) compared with traditional functional connectivity metrics demonstrates the importance of direct, stimulus-evoked pathways in architecting successful learning. The correlation between output units’ ability to evoke network-wide responses and performance suggests that effective neural interfaces benefit from neurons capable of recruiting broader network activity. This methodology of causal characterization could inform both therapeutic interventions and the design of future biological computing systems. By isolating fundamental stimulus-based functionality in simplified circuits, we can systematically identify and explore learning rules that may scale to complex bioelectronic systems.
+To test the biological basis of learning, we blocked glutamatergic transmission with the AMPA/kainate receptor antagonist NBQX and the NMDA receptor antagonist APV. Application of these antagonists reduced performance by 64%, which recovered after washout, confirming that learning depends on intact glutamatergic transmission. This establishes a synaptic basis for the observed plasticity. Adaptive training modifies biologically mediated neural dynamics rather than exploiting artifacts of the interface or task structure. Both AMPA and NMDA receptor-mediated neurotransmission is necessary for the adaptive responses. The rapid impairment and recovery suggest that our training paradigm induces changes in neural dynamics that require active glutamatergic signaling, though the precise cellular mechanisms underlying these stimulus-evoked changes remain to be characterized.
+Our open-source Python-based platform
+BrainDance
+(
+https://braingeneers.github.io/braindance
+) enables exploration of biological learning mechanisms through flexible and accessible experimental design following the rapid iteration paradigm that accelerated machine learning development. By isolating fundamental stimulus-based functionality in simplified circuits and providing tools for systematic investigation, this framework enables identification of learning rules that may scale from organoid models to therapeutic neural interfaces and hybrid bioelectronic computation systems.
+Limitations of the study
+Our experimental approach has several technical constraints that affect interpretation and generalizability. Planar HD-MEA recordings capture only activity from the organoid surface in contact with the array, missing the three-dimensional network structure above. Single-electrode thresholding for spike detection likely includes multi-unit activity, which hinders understanding connectivity on a per-neuron level; improved neural role assignment and real-time sorting methods
+57
+could address this limitation.
+The observed performance improvements did not persist through the 45-min rest periods between training cycles, requiring relearning in subsequent cycles. This suggests our training paradigm induces short-term plasticity operating on timescales distinct from canonical long-term potentiation. Whether this reflects fundamental constraints of the approach or could be overcome through modified training protocols remains unclear.
+Learning capability proved configuration dependent. Even within the same organoid, different selections of input/output neurons yielded varying success rates. Only 22% of adaptive training cycles (45% for continuous adaptive) achieved proficiency, indicating that successful learning under this paradigm requires specific network architecture features we do not yet fully understand. Our manual selection of neural configurations based on causal connectivity, while informed by data, lacks systematic optimization and likely misses better alternatives.
+The rate-coding scheme and reinforcement learning parameters (eligibility trace decay and learning rate) were hand-tuned rather than systematically optimized. More sophisticated approaches—adaptive encoding schemes, latent space representations of organoid state, or advanced RL algorithms that incorporate task structure—could improve performance. Integration of local field potentials might provide richer and more stable network state information beyond spike counts.
+Future investigations should examine how learning capability changes across organoid developmental stages and with different regional specifications, test systematic methods for neural configuration selection, explore how stimulation timing and pattern structure affect plasticity induction, and identify the cellular mechanisms underlying the glutamatergic-dependent adaptation we observe.
+Resource availability
+Lead contact
+Requests for further information and resources should be directed to and will be fulfilled by the lead contact, Ash Robbins (
+[email protected]
+).
+Materials availability
+This study did not generate new unique reagents. The mouse embryonic stem cell line BRUCE-4 used in this study is commercially available from Millipore Sigma (cat no. SF-CMTI-2; RRID: CVCL_K037).
+Data and code availability
+•
+Processed experimental data (neural unit activity, task trajectories, connectivity matrices, and experimental metadata) have been deposited and are publicly available as of the date of publication at Zenodo:
+https://doi.org/10.5281/zenodo.17684862
+. Complete raw electrophysiology recordings (>10 TB) will be shared by the
+lead contact
+upon reasonable request.
+•
+Original code for running experiments and analysis has been deposited and is publicly available as of the date of publication at Zenodo:
+https://doi.org/10.5281/zenodo.17684862
+. The BrainDance experimental framework is available at
+https://braingeneers.github.io/braindance
+.
+•
+Any additional information required to reanalyze the data reported in this paper is available from the
+lead contact
+upon request.
+Acknowledgments
+This work was supported by the Schmidt Futures Foundation (SF 857) and the National Human Genome Research Institute under award number 1RM1HG011543 (D.H., S.R.S., and M.T.); the National Science Foundation under award numbers NSF 2034037 (S.R.S. and M.T.) and NSF 2134955 (M.T., S.R.S, and D.H.) and an NSF graduate research fellowship (H.E.S.); and the National Institute of Mental Health under award number 1U24MH132628 (M.A.M.-R. and D.H.). We are thankful to the National Research Platform, supported by the National Science Foundation (NRP) under award numbers CNS-1730158, ACI-1540112, ACI-1541349, and OAC-1826967; the University of California Office of the President; and the University of California at San Diego’s California Institute for Telecommunications and Information Technology/Qualcomm Institute. We would also like to thank the University of California at Santa Cruz Life Sciences Microscopy Center Core Facility (RRID:
+SCR_021135
+).
+Author contributions
+A.R. conceived the study. A.R., H.E.S., A.S., K.V., D.H., and M.T. formulated and designed the experiments. A.R., H.E.S., and S.H. performed the experiments. H.E.S., S.H., and I.C. generated the biological samples and performed imaging. A.R. and H.E.S. analyzed the data. A.R., H.E.S., A.S., and D.F.P. developed analytical tools. K.V. and D.F.P. developed experimental infrastructure. K.V., T.v.d.M., J.G., S.R.S., T.S., and M.A.M.-R. provided conceptual guidance and experimental design insight. A.R., H.E.S., A.S., and D.H. wrote the manuscript. All authors reviewed and provided feedback on the manuscript.
+Declaration of interests
+K.V. is a co-founder and D.H., S.R.S., and M.T. are advisory board members of Open Culture Science, Inc., a company that may be affected by the research reported in the enclosed paper. A.R., A.S., D.H., and M.T. have a patent application related to this work.
+Declaration of generative AI and AI-assisted technologies in the writing process
+During the preparation of this work, the authors used Claude (Anthropic) in order to refine phrasing and assist with manuscript organization. After using these tools, the authors reviewed and edited the content as needed and take full responsibility for the content of the publication.
+STAR★Methods
+Key resources table
+REAGENT or RESOURCE
+SOURCE
+IDENTIFIER
+Antibodies
+Rabbit anti-Map2
+Proteintech
+Cat#:17490-1-AP; RRID:
+AB_2137880
+Rabbit anti-Nkx2.1
+Abcam
+Cat#: ab76013; RRID:
+AB_1310784
+;
+Mouse anti-Satb2
+Abcam
+Cat#: ab51502; RRID:
+AB_882455
+Mouse anti-Sst
+Santa Cruz Biotechnology
+Cat# sc55565; RRID:
+AB_831726
+Mouse anti-Gfap
+Thermo Fisher Scientific
+Cat# G6171, RRID:
+AB_1840893
+Mouse anti-Pax6
+BD Biosciences
+Cat# 561462, RRID:
+AB_10715442
+Chemicals, peptides, and recombinant proteins
+DAPI (4′,6-Diamidino-2-Phenylindole, dihydrochloride)
+Thermo Fisher Scientific
+Cat#: D1306
+MEM Non-Essential Amino Acids
+Thermo Fisher Scientific
+Cat#: 11140050
+Sodium Pyruvate
+Millipore Sigma
+Cat#: S8636
+Chemically Defined Lipid Concentrate
+Thermo Fisher Scientific
+Cat#: 11905031
+Heparin sodium salt
+Millipore Sigma
+Cat#: H3149
+GlutaMAX Supplement
+Thermo Fisher Scientific
+Cat#: 35050061
+N
+-2 Supplement
+Thermo Fisher Scientific
+Cat#: 17502048
+B-27 Plus supplement
+Thermo Fisher Scientific
+Cat#: A3582801
+B-27 supplement minus Vitamin A
+Thermo Fisher Scientific
+Cat#: 12587010
+CD lipid concentrate
+Thermo Fisher Scientific
+Cat#: 11905031
+Rho Kinase Inhibitor (Y-27632)
+Tocris
+Cat#: 1254
+Leukemia inhibitory factor
+Millipore Sigma
+Cat#: ESG1107
+Primocin
+Invitrogen
+Cat#: ant-pm-05
+Ascorbic Acid
+Millipore Sigma
+Cat#: 49752-10G
+IWR1-ε
+Cayman Chemical
+Cat#: 13659
+SB431542
+Tocris
+Cat#: 1614
+Poly-L-ornithine solution
+Millipore Sigma
+Cat#: P4957
+Laminin
+Millipore Sigma
+Cat#: L2020
+Polyethylenimine
+Millipore Sigma
+Cat#: 408727
+Fibronectin
+Millipore Sigma
+Cat#: DLW354008
+Deposited data
+Experimental data and analysis code
+This paper
+Zenodo:
+https://doi.org/10.5281/zenodo.17684862
+Experimental models: Cell lines
+BRUCE-4
+Millipore Sigma
+Cat#: SF-CMTI-2;
+RRID: CVCL_K037
+Software and algorithms
+BrainDance
+Braingeneers
+https://github.com/braingeneers/braindance
+MaxLab Live
+Maxwell Biosystems
+https://www.mxwbio.com/products/maxlab-live/
+ImageJ 2.3.0
+National Institutes of Health
+RRID:
+SCR_003070
+Zen Blue/Black
+Zeiss
+RRID:
+SCR_013672
+Other
+Dulbecco’s Modified Eagle Medium: Nutrient Mixture F-12 with GlutaMAX
+Thermo Fisher Scientific
+Cat#: 10565018
+Glasgow Minimum Essential Medium
+Thermo Fisher Scientific
+Cat#: 11710035
+BrainPhys Neuronal Medium
+Stem Cell Technologies
+Cat#: 05790
+Knockout Serum Replacement
+Thermo Fisher Scientific
+Cat#: 10828028
+Embryonic stem cell FBS
+Millipore Sigma
+Cat#: ESG1107
+ReLeSR Dissociation Reagent
+Stem Cell Technologies
+Cat#: 05872
+mFreSR Medium
+Stem Cell Technologies
+Cat#: 05855
+Open table in a new tab
+Experimental model and study participant details
+Mouse embryonic stem cell line
+All experiments were performed in the adapted BRUCE-4 mouse embryonic stem cell (ESC) line (Millipore Sigma #SF-CMTI-2). This line is derived from a male of the C57/BL6J mouse strain. Mycoplasma testing confirmed lack of contamination.
+ESCs were maintained on Recombinant Human Protein Vitronectin (Thermo Fisher Scientific #A14700) coated plates using mESC maintenance media containing Glasgow Minimum Essential Medium (Thermo Fisher Scientific #11710035), Embryonic Stem Cell-Qualified Fetal Bovine Serum (Thermo Fisher Scientific #10439001), 0.1 mM MEM Non-Essential Amino Acids (Thermo Fisher Scientific #11140050), 1 mM Sodium Pyruvate (Millipore Sigma #S8636), 2 mM Glutamax supplement (Thermo Fisher Scientific #35050061), 0.1 mM 2-Mercaptoethanol (Millipore Sigma #M3148), and 0.05 mg/ml Primocin (Invitrogen #ant-pm-05). mESC maintenance media was supplemented with 1,000 units/mL of Recombinant Mouse Leukemia Inhibitory Factor (Millipore Sigma #ESG1107). Media was changed every day.
+Vitronectin coating was incubated for 15 min at a concentration of 0.5 μg/mL dissolved in 1X PBS. Dissociation and cell passages were done using ReLeSR passaging reagent (Stem Cell Technologies #05872) according to the manufacturer’s instructions. Cell freezing was done in mFreSR cryopreservation medium (Stem Cell Technologies #05855) according to the manufacturer’s instructions.
+Mouse cortical organoid generation
+Mouse cortical organoids were grown as previously described by our group
+58
+,
+64
+with some modifications. To generate cortical organoids we single cell dissociated ESCs using TrypLE Express Enzyme (ThermoFisher Scientific #12604021) for 5 minutes at 37°C and re-aggregated in lipidure-coated 96-well V-bottom plates at a density of 3,000 cells per aggregate, in 100 μL of mESC maintenance media supplemented with Rho Kinase Inhibitor (Y-27632, 10 μM, Tocris #1254) and 1,000 units/mL of Recombinant Mouse Leukemia Inhibitory Factor (Millipore Sigma #ESG1107) (Day -1).
+After one day (Day 0), we replaced the medium with cortical differentiation medium containing Glasgow Minimum Essential Medium (Thermo Fisher Scientific # 11710035), 10% Knockout Serum Replacement (Thermo Fisher Scientific # 10828028), 0.1 mM MEM Non-Essential Amino Acids (Thermo Fisher Scientific # 11140050), 1 mM Sodium Pyruvate (Millipore Sigma # S8636), 2 mM Glutamax supplement (Thermo Fisher Scientific # 35050061), 0.1 mM 2-Mercaptoethanol (Millipore Sigma # M3148), and 0.05 mg/ml Primocin (Invitrogen # ant-pm-05). Cortical differentiation medium was supplemented with Rho Kinase Inhibitor (Y-27632, 20 μM # 1254), WNT inhibitor (IWR1-
+ϵ
+, 3 μM, Cayman Chemical # 13659), and TGF-Beta inhibitor (SB431542, Tocris # 1614, 5 μM). Days 0-5 media were changed every day.
+On day 5, organoids were transferred to ultra-low adhesion plates (Millipore Sigma # CLS3471) where media was aspirated and replaced with fresh neuronal differentiation media. The plate with organoids was put on an orbital shaker at 60 revolutions per minute. Neuronal differentiation medium contained Dulbecco’s Modified Eagle Medium: Nutrient Mixture F-12 with GlutaMAX supplement (Thermo Fisher Scientific # 10565018), 1X N-2 Supplement (Thermo Fisher Scientific # 17502048), 1X B-27 Supplement without vitamin a (Thermo Fisher Scientific # 12587010) 1X Chemically Defined Lipid Concentrate (Thermo Fisher Scientific # 11905031) and 0.05 mg/ml Primocin (Invitrogen # ant-pm-05). Organoids were grown under 5% CO2 conditions. The medium was changed every 2-3 days.
+On day 14 and onward, we transferred the organoids to neuronal maturation media containing BrainPhys Neuronal Medium (Stem Cell Technologies # 05790), 1X N-2 Supplement, 1X Chemically Defined Lipid Concentrate (Thermo Fisher Scientific # 11905031), 1X B-27 Supplement serum free (Thermo Fisher Scientific # 17504044), 0.05 mg/ml Primocin (Invitrogen # ant-pm-05) and 0.5% v/v Matrigel Growth Factor Reduced (GFR) Basement Membrane Matrix, LDEV-free.
+HD-MEA plating and coating
+Mouse cortical organoids were plated at day 25 on MaxOne high-density multielectrode arrays (Maxwell Biosystems) as previously described by our group.
+52
+,
+58
+Prior to organoid plating, the multielectrode arrays were coated in two steps: First, we performed an overnight coating with 0.01% Poly-L-ornithine (Millipore Sigma #P4957) at 37°C. Plates were then washed 3 times with 1X Phosphate-buffered saline (PBS) pH 7.4 (Thermo Fisher Scientific #70011044). We then performed an overnight coating with 5 μg/mL mouse Laminin (Fisher Scientific #CB40232) and 5 μg/mL human Fibronectin (Fisher Scientific #CB40008) at 37°C.
+After coating, we placed the organoids on the chip and removed excess media. The organoids were then incubated at 37°C for 10 minutes to promote attachment. We then added pre-warmed neuronal maturation media and changed the media every 2-3 days.
+Experimental design and sample
+Experiments were performed on 19 mouse cortical organoids derived from 8 independent differentiation batches of BRUCE-4 embryonic stem cells. Each organoid was plated on a separate HD-MEA chip at day 25-30 of differentiation.
+Biological replicates: Each organoid represents an independent biological replicate. Organoids from the same batch plated on different days are considered separate biological replicates due to variability in differentiation and plating outcomes.
+Technical replicates: Multiple experiments on the same organoid represent technical replicates since we did not observe significant long-term modification. Multiple cycles within an experiment represent repeated measurements.
+Sample sizes across all experiments:
+•
+19 organoids from 8 independent batches
+•
+16 organoids from 7 independent batches for cartpole training
+•
+432 total training cycles across cycled and continuous conditions
+•
+Null: n=131 cycles from 12 organoids from 5 batches (29 experiments)
+•
+Random: n=68 cycles from 9 organoids from 5 batches (20 experiments)
+•
+Adaptive (cycled): n=92 cycles from 12 organoids from 5 batches (26 experiments)
+•
+Continuous Adaptive: n=141 cycles from 7 organoids from 4 batches (10 experiments)
+•
+NBQX + APV experiments: n=38 cycles from 3 organoids from 1 batch (3 experiments)
+•
+>125 hours cumulative recording time
+Three organoids were tested in both cycled and continuous adaptive paradigms in separate experiments.
+Method details
+High-density microelectrode array recording
+Extracellular signals were obtained through the MaxWell MaxOne system (MaxOne, Maxwell Biosystems)
+65
+, using custom experimental software for precise stimulation setup and timing.
+50
+Signals were recorded at a sampling rate of 20 kHz/channel with a 1 Hz hardware filter, for up to 1024 channels. At most 32 stimulation electrodes could be selected at a time. Cultures were maintained within incubators full-time during recordings. Experiments were run with the BrainDance (
+https://braingeneers.github.io/braindance
+) Python library and longitudinally scheduled using an Internet of Things framework.
+66
+Spontaneous recording and neural unit identification
+To rapidly determine the location and footprint of neurons, we performed spontaneous recordings capturing baseline neural activity. Automatic analysis located neurons based on quantity and magnitude of action potentials above threshold. Spike detection threshold was set at 5 times the root-mean-square amplitude of the channel signal in MaxLab Live software (MaxWell Biosystems). This conservative threshold ensured selection of the most relevant units, and was higher compared to later experimental phases.
+Channels with activity were combined into putative neural unit footprints using spike-triggered averaging of electrical signals across all channels. Channels with peak-to-peak variation above an empirically chosen threshold in their spike-triggered average were considered part of the same footprint, forming an ad-hoc test for channels significantly likely to demonstrate simultaneous activity.
+Redundant footprints were eliminated by identifying pairs sharing at least 50% of spike times and retaining the footprint with larger peak-to-peak signal amplitude in its spike-triggered average.
+From these footprints, up to 32 putative units were selected for stimulation based on a custom metric
+η
+designed to identify electrodes where spikes could be detected most consistently. This metric combined firing rate and mean spike amplitude
+μ
+amp
+:
+η
+=
+(
+1
++
+r
+ˆ
+)
+·
+(
+1
++
+0.1
+|
+μ
+amp
+|
+)
+(Equation 1)
+where the normalized log spike rate
+r
+ˆ
+is defined with respect to minimum and maximum spike rates across all electrodes:
+r
+ˆ
+=
+ln
+(
+1
++
+r
+)
+−
+min
+(
+ln
+(
+1
++
+r
+)
+)
+max
+(
+ln
+(
+1
++
+r
+)
+)
+−
+min
+(
+ln
+(
+1
++
+r
+)
+)
+(Equation 2)
+Stimulation waveform parameters
+All electrical stimulations used charge-balanced biphasic square wave pulses with 400 μV peak-to-peak amplitude and 200 μs per phase (400 μs total duration), positive phase first. For encoding sensory information, stimulation frequencies were dynamically adjusted according to the rate-coding equations described above. For training signals, patterns consisted of sequential biphasic pulses delivered with 10 ms inter-pulse intervals, repeated at 10 Hz for the duration of the training period (200-300 ms depending on the experiment).
+Stimulus-response characterization
+After identifying putative neural units, we characterize their stimulus-response properties by delivering biphasic pulses to each unit and recording the network’s response. Previous studies have identified multiple different response timescales
+67
+, so we consider two separate connectivity metrics: the first-order connectivity
+C
+1
+, and the multi-order connectivity
+C
+m
+.
+For a window of stimulus-relative time, we define a response tensor indexed by the stimulus repetition
+k
+, the stimulus electrode
+i
+, the recording channel
+j
+:
+R
+k
+i
+,
+j
+∈
+[
+0
+,
+T
+]
+N
+n
+reps
+×
+n
+stim
+×
+n
+channels
+(Equation 3)
+where
+n
+reps
+is the number of stimulus repetitions (50),
+n
+stim
+is the number of stimulation electrodes corresponding to putative neurons, and
+n
+channels
+is the number of recording channels specifically under putative neurons. The value of the tensor is the number of spikes in an interval of time relative to each stimulus, with spikes identified by thresholding at 3 standard deviations. The 3
+σ
+threshold is applied after SALPA artifact removal
+68
+, which substantially reduces artifacts from electrical stimulation, and maintains real-time performance.
+First-order connectivity
+C
+1
+is the observed probability of evoking at least one spike within 10ms:
+C
+1
+(
+i
+,
+j
+)
+=
+1
+n
+reps
+∑
+k
+=
+1
+n
+reps
+I
+(
+R
+k
+i
+,
+j
+>
+[
+0
+,
+10
+ms
+]
+0
+)
+(Equation 4)
+Multi-order connectivity
+C
+m
+is the average number of spikes observed in a longer window:
+C
+m
+(
+i
+,
+j
+)
+=
+1
+n
+reps
+∑
+k
+=
+1
+n
+reps
+R
+k
+i
+,
+j
+[
+10
+ms
+,
+200
+ms
+]
+(Equation 5)
+To identify network-wide bursts of the units, we compute the total spike count across all channels for each stimulation. A burst is detected when this count exceeds the median count plus three median absolute deviations (MAD). Bursts are excluded from the multi-order connectivity calculation to focus on specific neural pathways rather than larger network activations.
+These metrics enable identification of both direct and network-mediated connections between neural units.
+Neural configuration selection
+Neural configurations were chosen following a three-part systematic approach. First, we identified encoding units with selective connectivity patterns, characterized by columns in the first-order connectivity matrix where only a small fraction of units showed high response probabilities. We prioritized encoding unit pairs (e.g., A → B and C → D) that maintained independence, avoiding configurations where stimulation of one encoding unit would strongly activate the other encoding unit or the opposite decoding unit (i.e., avoiding strong A → C or A → D connections). When suitable first-order connections were sparse, we used the multi-order connectivity matrix as a secondary criterion. Finally, we excluded units that consistently evoked network-wide bursts (burst probability >0.5), as widespread activation interfered with precise information transmission on the task timescale. Configurations were tested for one training cycle, and if the 90th percentile time balanced did not exceed 10 s, an alternative configuration was selected.
+We did not enforce a minimum distance between stimulation electrodes. To avoid redundant detection of the same neuron from multiple electrodes, we employed a conservative footprint deduplication method during the Record phase. Putative spatio-temporal footprints were extracted for each active channel, and pairs sharing more than 50% of their constituent electrodes were identified as redundant. For each redundant pair, we retained only the footprint with the larger peak-to-peak signal amplitude in its spike-triggered average. Representative spatial distributions of neural configurations are shown in
+Figure S7
+.
+Cartpole task environment
+Cartpole (also known as inverted pendulum) is a traditional control problem which tests an agent’s ability to balance an unstable dynamical system. The task is typically restricted to 2D, involving a cart that can move horizontally balancing a pole vertically that is free to rotate around the attachment joint. The goal is to keep the pole upright by applying horizontal forces to the cart. This benchmark is valuable for its simple formulation yet inherent instability, real-world parallels, and widespread use in both control theory and reinforcement learning.
+45
+,
+46
+The system state is fully described by four variables: cart position
+x
+, cart velocity
+x
+˙
+, pole angle
+θ
+, and angular velocity
+θ
+˙
+. The agent can apply a force
+F
+∈{-10N,10N} to the cart at each timestep. The full equations of motion describing the nonlinear dynamics can be found in
+69
+. Episodes begin with small random perturbations to
+θ
+and
+θ
+˙
+and proceed in discrete timesteps until |
+θ
+|>16
+∘
+, at which point the pole is considered to be in an unrecoverable state. We chose to remove traditional horizontal position bounds to focus solely on the pole balancing aspect of the task.
+Each timestep involves decoding spike rates from the culture to determine the applied force, updating the virtual environment state with said force, and adjusting the encoding stimulation rates corresponding to the current virtual state.
+Rate-coding scheme for encoding and decoding
+Throughout this study, we use rate coding for both input/encoding and output/decoding signals, which provides sufficient information transmission, especially when focusing on small numbers of neurons.
+6
+,
+70
+,
+71
+The virtual state is encoded to the culture through two input neurons receiving stimulation frequencies determined by the pole angle
+θ
+:
+f
+1
+=
+a
+·
+(
+b
+−
+sin
+(
+θ
+)
+)
+2
+(Equation 6)
+f
+2
+=
+a
+·
+(
+b
++
+sin
+(
+θ
+)
+)
+2
+where
+a
+=7 and
+b
+=0.15 are scaling factors that maintain stimulation frequencies in a biologically relevant range (both neurons receive ≈1.1 Hz when the pole is vertical, with frequencies diverging to ≈0.8 Hz and ≈8.9 Hz at terminal angles) while still being able to represent the sign of the angle. This functional form was chosen because the sinusoidal encoding ensures that the neurons receive opposing signals based on the pole’s deviation from vertical, while the exponent enables the frequency to change faster as it nears the terminal angle.
+For decoding signal from the culture, spikes are detected by a threshold of 3 standard deviations. Each output neuron’s activity is then converted to a smoothed firing rate by an exponential moving average:
+r
+t
+=
+α
+r
+t
+−
+1
++
+(
+1
+−
+α
+)
+c
+t
+(Equation 7)
+where
+r
+t
+is the smoothed firing rate at time
+t
+,
+c
+t
+is the raw spike count in the current window, and
+α
+=0.2 balances immediate responses with firing rate stability.
+The force
+F
+applied to the cart is determined by the difference between the two output units’ smoothed firing rates, which are clipped to the range from -1 to 1 and then multiplied by 10 N.
+Real-time closed-loop implementation
+The closed-loop system operates through discrete timesteps involving three key components: the organoid’s neural activity, the simulated environment, and the training signals. Each timestep consists of:
+1.
+Read Period (200 ms):
+•
+Process raw signals using SALPA (Subtraction of Artifacts by Local Polynomial Approximation)
+68
+for artifact removal
+•
+Detect spikes via thresholding at 3 standard deviations post-SALPA
+•
+Monitor motor neuron activity via smoothed firing rates
+r
+t
+(
+Equation 7
+)
+2.
+Environment Update:
+•
+Decode motor signals
+r
+1,
+t
+and
+r
+2,
+t
+to output force
+F
+•
+Update cartpole state according to physics
+•
+Encode new state to stimulation frequencies (
+Equation 6
+)
+3.
+Training Period (300 ms, conditional):
+•
+Skip unless episode completed
+•
+Deliver training patterns if 5-episode mean performance below 20-episode mean
+•
+For adaptive protocol (see below), update value estimates based on performance
+Each phase requires precise timing to maintain real-time control. A longer read phase yields reliable spike counts and smoother actions, whereas a shorter read phase leads to more responsive, yet noisy control. Experiments used either 200 ms or 300 ms read phases. For direct comparison, performance metrics from 200 ms experiments were scaled by a factor of 1.5 to normalize to a 300 ms time base.
+Training signal paradigms
+Training signals were delivered in a manner to induce a shift in how the network processed inputs. The training patterns were delivered only in response to two conditions being met: 1) termination of the task (pole drops below a terminal angle), and 2) the performance of the 5-episode mean is below the performance of the 20-episode mean. This second criterion results in the system focusing on larger-scale adaptations while ignoring singular episodes with poor performance. When these both are met, we enter the training period, where this is the only stimulation being delivered. Three experimental conditions were tested: a null case without stimulation, and two stimulation paradigms, random and adaptive, with signals administered to the corresponding training neurons. The pool from which individual training neurons and corresponding electrodes (“training electrodes”) were selected to receive feedback stimulation (
+n
+=8–15) was created in the Record phase based on the activity metric described in Methods: Spontaneous recording and neural unit identification.
+The random paradigm delivered sequential biphasic pulses (5 ms inter-pulse interval) through 5 training electrodes selected randomly without replacement from the pool of possible training electrodes. Each stimulation epoch consisted of one complete 5-pulse sequence delivered at 10 Hz for 200 ms.
+In contrast to the random paradigm, the adaptive paradigm utilized a weighted sampling approach for paired-pulse patterns (5 ms inter-pulse interval). We construct a pool of all possible training patterns (e.g., if electrodes A, B, C, D, E are available, patterns include (A,B), (A,C), (A,D), …, (D,E)), and sample based on a its historical contribution to performance improvements. Each training pattern
+i
+had a value estimate
+V
+i
+updated at the end of each episode via:
+V
+i
+,
+t
++
+1
+=
+V
+i
+,
+t
++
+α
+(
+R
+t
+−
+V
+i
+,
+t
+)
+E
+i
+,
+t
+(Equation 8)
+where
+R
+t
+denotes time balanced (our performance metric, episode duration),
+α
+(0.3) is the learning rate, and
+E
+i
+,
+t
+represents the eligibility trace:
+E
+i
+,
+t
+=
+γ
+E
+i
+,
+t
+−
+1
++
+{
+1
+for
+selected
+training
+pattern
+i
+0
+for
+all
+other
+training
+patterns
+(Equation 9)
+where
+γ
+(0.3) is the decay factor that diminishes the influence of past selections. The eligibility trace enables temporal credit assignment by storing a decaying record of recent stimulation patterns, weighted by their previous success in improving performance. The eligibility trace keeps track of which previous training patterns contributed to the current received performance.
+Value estimates were not allowed to decrease between the minimum possible episode reward of 10. Selection probabilities were computed as:
+P
+(
+i
+)
+=
+V
+i
+∑
+j
+V
+j
+(Equation 10)
+Training patterns were sampled according to these probabilities and delivered as paired pulses at 10 Hz for 300 ms.
+Pharmacological inhibition of glutamate receptors
+Drug concentrations were selected based on established effective doses from previous studies.
+72
+,
+73
+NBQX (Abcam #ab120045) was used at 20 μM and APV at 100 μM. Stock solutions were prepared to enable 1:1000 dilution (1 μL per 1 mL medium), with NBQX dissolved in DMSO and APV in water. After drug administration, organoids were incubated for at least 30 minutes before undergoing drug-modulated training cycles.
+Immunohistochemistry and confocal imaging
+Organoids were collected and fixed in room temperature 4% Paraformaldehyde (PFA) (Thermo Fisher Scientific # 28908) and cryopreserved in 30% Sucrose (Millipore Sigma # S8501). They were then embedded in a solution containing 50% of Tissue-Tek O.C.T. Compound (Sakura # 4583) and 50% of 30% sucrose dissolved in 1X Phosphate-buffered saline (PBS) pH 7.4 (Thermo Fisher Scientific # 70011044). Organoids were then sectioned to 20 μm using a cryostat (Leica Biosystems # CM3050) directly onto glass slides. After 2 washes of 5 minutes in 1X PBS and 1 wash in deionized water (Chem world #CW-DW-2G), the sections were incubated in blocking solution 5% v/v donkey serum (Millipore Sigma # D9663), and 0.1% Triton X-100 (Millipore Sigma # X100) for 1 hour. The sections were then incubated in primary antibodies overnight at 4°C. They were then washed 3 times for 10 minutes in PBS and incubated in secondary antibodies diluted in blocking solution for 90 minutes at room temperature. They were then washed 3 times for 10 minutes in PBS and coverslipped with Fluoromount-G Mounting Medium (Thermo Fisher Scientific # 00-4958-02).
+Primary antibodies used were: mouse anti Gfap (Thermo Fisher Scientific #G6171, RRID:
+AB_1840893
+, 1:100); rabbit anti Map2 (Proteintech #17490-1-AP, RRID:
+AB_2137880
+, 1:2000); mouse anti Sst (Santa Cruz Biotechnology #sc-55565, RRID:
+AB_831726
+, 1:100); mouse anti Satb2 (Abcam #ab51502, RRID:
+AB_882455
+, 1:100); mouse anti Pax6 (BD Biosciences #561462, RRID:
+AB_10715442
+, 1:100). rabbit anti Brn2 (Thermo Fisher #PA530124, RRID:
+AB_2547598
+, 1:100); rabbit anti Tle4 (Thermo Fisher #PA530192, RRID:
+AB_2547666
+, 1:100); rat anti Ctip2 (Abcam #ab18465, RRID:
+AB_2064130
+, 1:100),rabbit anti Nkx2.1 (Abcam #ab76013, RRID:
+AB_1310784
+, 1:400).
+Secondary antibodies were of the Alexa series (Thermo Fisher Scientific), used at a concentration of 1:750. Nuclear counterstain was performed using 300 nM DAPI (4’,6-Diamidino-2-Phenylindole, Dihydrochloride) (Thermo Fisher # D1306).
+Imaging was done using an inverted confocal microscope (Zeiss 880) and Zen Blue software (Zeiss). Images were processed using Zen Black (Zeiss) and Fiji/ImageJ software (NIH).
+74
+Quantification and statistical analysis
+All statistical analyses were performed in Python using scipy.stats and statsmodels libraries. Prior to statistical testing, we assessed normality of the 90th percentile performance distributions using Shapiro-Wilk tests, which revealed significant deviations from normality across all conditions (
+p
+< 0.001). Sample sizes varied between experimental conditions and correlation analyses due to technical factors including intermittent signal loss during stimulation and occasional hardware issues during longitudinal experiments that prevented complete data collection.
+Given these non-normal distributions, we employed the non-parametric Kruskal-Wallis H-test for overall differences between conditions (
+H
+(3)=91.69,
+p
+=9.52×10
+-20
+) and Dunn’s post hoc test for subsequent pairwise comparisons between conditions (null, random, adaptive, and continuous adaptive), with Holm-Bonferroni correction for multiple comparisons. All statistical tests used an alpha level of 0.05, with
+p
+-values reported where appropriate. Organoids were considered proficient if their 90th percentile performance exceeded a threshold defined by random controller simulations (see
+supplemental information
+: Proficiency Threshold for detailed methodology). Sample sizes for each analysis are reported as:
+n
+= [cycles] from [organoids] from [batches]. Statistical parameters (exact value of
+n
+, what
+n
+represents, SEM, SD, etc.) are reported in figure legends and results text. Statistical significance is denoted as
+∗
+P
+<0.05,
+∗∗
+P
+<0.01,
+∗∗∗
+P
+<0.001.
+Supplemental information (2)
+PDF (2.25 MB)
+Document S1. Figures S1–S7, Table S1, and Methods S1
+PDF (13.89 MB)
+Document S2. Article plus supplemental information
