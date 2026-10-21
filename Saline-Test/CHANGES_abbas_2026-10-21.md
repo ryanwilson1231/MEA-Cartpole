@@ -24,6 +24,8 @@ Saline has no neurons, so all of these have a known right answer.
 | `mea_kit/ucsc_mapping/` | v1, UCSC as-is (5×RMS units, footprint merge, top-32 by η, 3 SD responses, C1 10/18 ms, Cm 200 ms, median+3MAD bursts, rubric roles). v2, adapted to our rig (electrode = unit, baseline-corrected C1 + exact test + FDR, both windows, starts after the blind period). v3, automatic input/zone selection. Drift comparison. | Syrine's plan, steps 1–2. Saline is the null test for it. |
 | `mea_kit/hardware/` | Saline protocol: baseline, rows R1–R5, sweep, amplitude series, switching test. Pulses are cathodic-first. Every stream is recorded to disk. Includes a fake device for dry runs and `probe_api.py`, which checks the DLL with no stimulation. | Produces the data the benchmark needs, in one command. |
 | `tests/` | 22 tests (incl. "blanking stays ON"): interface, removal, pulse timing with and without the sideband, end-to-end dry run, mapping recovers known connections, safety limits. | So it's known to run before tomorrow. |
+| `archive/abbas_2026-10-21_old_mea_device.py` | My old `Abbas_mea_device.py`, moved out of the repo root (it was untracked, not actually in `Baseline-Protocol/Hardware/` as planned) and archived with a header explaining why it's unused. | Can't run - imports `CMcsUsbBStimNet`, which isn't in our DLL (finding 8). Its two ideas live on elsewhere; see the header. |
+| Root `.gitignore`, root `README.md` | Added `sessions/`, `*.bin`, `probe_report.txt` to the root `.gitignore`; added a `Saline-Test/` row to the root README's repo layout table. | Recordings are ~7 GB and must never be committed; new members should see the kit in the repo layout. |
 
 ## Evidence
 
