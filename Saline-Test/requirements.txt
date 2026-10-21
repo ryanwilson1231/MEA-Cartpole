@@ -1,0 +1,10 @@
+# Saline-Test kit - Abbas, Oct 21 2026
+numpy>=1.20
+scipy>=1.7
+matplotlib
+h5py            # only to read MCS .h5 exports
+salpa           # SALPA artifact removal (Wagenaar). If it fails to install, the kit uses a pure-Python fallback
+spikeinterface  # remove_artifacts column
+pytest
+# lab PC (Windows) only:
+# pythonnet
