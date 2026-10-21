@@ -205,3 +205,8 @@ cython_debug/
 marimo/_static/
 marimo/_lsp/
 __marimo__/
+
+# Abbas, Oct 21 2026 (changed): ignore saline-test session recordings and probe output - recordings are ~7 GB, never commit
+sessions/
+*.bin
+probe_report.txt

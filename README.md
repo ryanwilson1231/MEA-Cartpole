@@ -18,3 +18,4 @@ that follow the same steps. Its README explains the loop and how to run it.
 | `Brian2-Path/` | Full simulation: inhibition, synaptic scaling, reward-modulated STDP |
 | `Hardware-Pythonnet-Path/` | Full hardware version for the MEA2100-Mini (pythonnet + `McsUsbNet.dll`) |
 | `spike.py`, `square.py` | Spike detection and stimulation waveforms used by the full paths |
+| `Saline-Test/` | Saline test kit: artifact removers, saline benchmark (pivot table), UCSC-style mapping, saline stimulation protocol (Abbas, Oct 21 2026) |
