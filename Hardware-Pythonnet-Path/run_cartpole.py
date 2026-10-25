@@ -71,7 +71,8 @@ def run_integrated_dishbrain():
             step_count = 0
  
             while not done:
-                time.sleep(0.05)
+                # FIX: removed a hardcoded 50 ms sleep that added delay to every
+                # control step with no stated purpose. See Latency-Tests branches.
                 pole_angle, pole_angular_velocity, reward, terminated = gym_api.run_single_frame()
                 mea_interface.stimulate_neurons(pole_angle, pole_angular_velocity, reward)
                 done = terminated

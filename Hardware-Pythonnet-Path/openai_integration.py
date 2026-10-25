@@ -1,4 +1,4 @@
-import gym
+import gymnasium as gym
 import numpy as np
 
 class IntegratedOpenAIGymAPI:
@@ -14,7 +14,7 @@ class IntegratedOpenAIGymAPI:
         self.total_reward = 0
         return state
     
-    def run_single_frame(self, client_socket):
+    def run_single_frame(self):
         """Run a single frame of the CartPole environment."""
         # Get neural data from the MEA
         raw_neural_buffer = self.mea_interface.read_neural_data_buffer()
