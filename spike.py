@@ -83,4 +83,3 @@ def get_dummy_counts(lc=100, hc=500, thresh=4):
     median_abs_deviations, abs_activity, activity, channel_MAD = MADs(time, data, low_cutoff=lc, high_cutoff=hc)
     counts = count_spikes(abs_activity, median_abs_deviations, thresh)
     return counts
-
