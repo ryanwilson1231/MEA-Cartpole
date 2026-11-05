@@ -1,4 +1,5 @@
-# brian_integration.py
+# Modified from brian_integration.py
+
 import matplotlib.pyplot as plt
 from brian_simulator import Brian2MEASimulator
 import brian2 as b2
