@@ -1,7 +1,7 @@
-#Game-Independent Controls
+# Game-Independent Controls
 Modify the Main Game code to decouple feedback stimulation from game outcomes, then compare training performance with that under outcome-dependent feedback to assess the role of reward/punishment contingency in learning. 
 
-##Control Methods (modified version from Main Game Codes)
+## Control Methods (modified version from Main Game Codes)
 | Control	| Brian2-Path	| Hardware-Pythonnet-Path |
 |------|------|------|
 | Method #1: Silent	| Disable stimulation and reward-modulated STDP; preserve simulation and decoding	| Skip stimulation; preserve recording, decoding and game updates |
