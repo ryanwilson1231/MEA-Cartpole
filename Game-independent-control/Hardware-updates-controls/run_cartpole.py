@@ -42,7 +42,9 @@ def plot_episode_data(episode_steps, episode_rewards, timestamp):
     print(f"Performance plot saved to cartpole_performance_{timestamp}.png")
  
  
-def run_integrated_dishbrain(control_mode='training', episodes=100, rest_duration=60):
+def run_integrated_dishbrain(control_mode='training', episodes=100, rest_duration=60,
+                            feedback_duration=1.0):
+    # Silent reuses the original 1 s inter-episode gap as a configurable feedback window.
     """Run the integrated DishBrain experiment."""
     mea_interface = IntegratedMEAInterface(control_mode=control_mode)
     # Pass the control to the original MEA interface before the experiment starts.
@@ -80,8 +82,12 @@ def run_integrated_dishbrain(control_mode='training', episodes=100, rest_duratio
             while not done:
                 time.sleep(0.05)
                 pole_angle, pole_angular_velocity, reward, terminated = gym_api.run_single_frame()
-                mea_interface.stimulate_neurons(pole_angle, pole_angular_velocity, reward)
                 done = terminated
+                if done and control_mode == 'silent':
+                    mea_interface.set_stimulation_phase('feedback')
+                else:
+                    mea_interface.stimulate_neurons(pole_angle, pole_angular_velocity, reward)
+                # Mute on the terminal frame before any new feedback waveform is sent.
                 step_count += 1
  
                 if step_count % 10 == 0:
@@ -92,7 +98,17 @@ def run_integrated_dishbrain(control_mode='training', episodes=100, rest_duratio
             episode_steps.append(step_count)
             episode_rewards.append(gym_api.total_reward)
  
-            time.sleep(1.0)
+            if control_mode == 'silent':
+                end_time = time.monotonic() + feedback_duration
+                while time.monotonic() < end_time:
+                    gym_api.feedback_buffer = mea_interface.read_neural_data_buffer()
+                    remaining = end_time - time.monotonic()
+                    if remaining > 0:
+                        time.sleep(min(0.05, remaining))
+                # Keep acquisition active throughout the complete Silent feedback window.
+            elif control_mode == 'training':
+                time.sleep(1.0)
+            # Sensory-only starts the next episode directly, with no programmed silence.
  
         save_episode_data(episode_steps, episode_rewards, timestamp)
         plot_episode_data(episode_steps, episode_rewards, timestamp)
@@ -123,7 +139,11 @@ if __name__ == "__main__":
     parser.add_argument('--episodes', type=int, default=100)
     parser.add_argument('--rest-duration', type=float, default=60,
                         help='Rest recording duration in wall-clock seconds')
+    parser.add_argument('--feedback-duration', type=float, default=1.0,
+                        help='Silent post-game interval in wall-clock seconds')
+    # This replaces Silent's gap only; Sensory-only skips the inter-episode pause.
     args = parser.parse_args()
     # Select the same three controls as Brian2; retain the existing training default.
     run_integrated_dishbrain(control_mode=args.control_mode, episodes=args.episodes,
-                            rest_duration=args.rest_duration)
+                            rest_duration=args.rest_duration,
+                            feedback_duration=args.feedback_duration)

@@ -44,8 +44,19 @@ class IntegratedMEAInterface:
         # Apply the selected control before acquisition and stimulation begin.
 
     def set_control_mode(self, control_mode):
+        if self.device_connected and control_mode == 'rest':
+            self.send_stimulation(np.zeros(500), range(self.num_channels))
+        # Clear any previously programmed output before entering recording-only Rest.
         self.control_mode = control_mode
+        self.stimulation_phase = 'game'
         # Change stimulation policy while keeping the existing recording connection.
+
+    def set_stimulation_phase(self, phase):
+        if self.control_mode == 'silent' and phase == 'feedback':
+            self.send_stimulation(np.zeros(500), range(self.num_channels))
+        # Replace existing waveforms with zero output through the original hardware API.
+        self.stimulation_phase = phase
+        # Close the Silent output gate only for the post-game feedback interval.
 
     def connect_to_device(self):
         """Connect to the MEA device and configure it."""
@@ -252,9 +263,10 @@ class IntegratedMEAInterface:
     
     def send_stimulation(self, waveform, selected_channels):
         """Send a stimulation waveform to selected channels."""
-        if self.control_mode in ('silent', 'rest'):
+        if self.control_mode == 'rest' or (
+                self.control_mode == 'silent' and self.stimulation_phase == 'feedback'):
             return False
-        # Silent and Rest suppress output even when this method is called directly.
+        # Block new output throughout Rest and during Silent's feedback phase only.
         if not self.device_connected or self.bstim is None:
             print("Device not connected or stimulation not available")
             return False
@@ -306,9 +318,10 @@ class IntegratedMEAInterface:
     
     def stimulate_neurons(self, pole_angle, pole_angular_velocity, reward):
         """Generate and apply stimulation based on pole angle, angular velocity, and reward."""
-        if self.control_mode in ('silent', 'rest'):
+        if self.control_mode == 'rest' or (
+                self.control_mode == 'silent' and self.stimulation_phase == 'feedback'):
             return False
-        # Keep recording available while skipping all stimulation in these controls.
+        # Preserve in-game stimulation for Silent; mute every input only after the game.
         from square import generate_stim_wave
         
         # Determine which pattern to use based on pole angle

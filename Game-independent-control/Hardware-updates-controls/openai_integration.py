@@ -22,6 +22,8 @@ class IntegratedOpenAIGymAPI:
         if self.env is None:
             self.env = gym.make('CartPole-v1')
         # Reset the game only in game modes, including when leaving Rest.
+        self.mea_interface.set_stimulation_phase('game')
+        # Reopen the original in-game stimulation policy for each new episode.
         state, _ = self.env.reset()
         self.total_reward = 0
         return state
