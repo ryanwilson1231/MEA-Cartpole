@@ -1,4 +1,4 @@
-# brian_integration.py
+# Modified of brian_integration.py, 3 methods inserted to test game-dependent stimulations. 
 import matplotlib.pyplot as plt
 from brian_simulator import Brian2MEASimulator
 import brian2 as b2
