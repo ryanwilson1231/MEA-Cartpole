@@ -72,6 +72,7 @@ Then add this shared block **immediately below** the two lines for your chosen p
 
 Run each experiment from the default physics and enter `1`, `2`, or `3` at the prompt. Do not add other assignments that change force or mass before the trigger.
 
+### To Run on Windows
 ## 4. Run the experiment
 
 From the repository root, run in Windows PowerShell:
