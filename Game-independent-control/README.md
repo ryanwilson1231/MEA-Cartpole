@@ -60,6 +60,8 @@ options and hardware uses wall-clock time. Training retains its original
 behavior. Sensory-only ignores `--feedback-duration` and adds no post-game wait.
 Brian2 plots the recorded session without adding simulation time.
 
+-----
+### Additional Info when anyone want to run on windows:
 ### Run from the repository root
 
 In Windows PowerShell, make the shared `spike.py` and `square.py` available:
