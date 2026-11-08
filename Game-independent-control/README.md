@@ -1,23 +1,12 @@
-# MEA-closed-loop-neural-stimulation-and-recording
+# Game-Independent Controls
+Modify the Main Game code to decouple feedback stimulation from game outcomes, then compare training performance with that under outcome-dependent feedback to assess the role of reward/punishment contingency in learning. 
 
-Neurotech@Berkeley MEA team. Neurons on a microelectrode array (MEA) play
-CartPole in a closed loop: stimulation tells them where the pole is, and their
-spikes decide which way to push the cart.
-
-## New members: start here
-
-Go to [`Baseline-Protocol/`](Baseline-Protocol/). It's the simplest working version of the
-project, with a simulated version (Brian2, no hardware needed) and a hardware version
-that follow the same steps. Its README explains the loop and how to run it.
-
-## Repo layout
-
-| Folder | What it is |
-|--------|------------|
-| `Baseline-Protocol/` | Simplified starting point: Brian2 and hardware versions side by side |
-| `Brian2-Path/` | Full simulation: inhibition, synaptic scaling, reward-modulated STDP |
-| `Hardware-Pythonnet-Path/` | Full hardware version for the MEA2100-Mini (pythonnet + `McsUsbNet.dll`) |
-| `spike.py`, `square.py` | Spike detection and stimulation waveforms used by the full paths |
+## Overview: Control Methods (modified version from Main Game Codes)
+| Control	| Brian2-Path --> Brian2-Path-Controls	| Hardware-Pythonnet-Path --> Hardware-Pythonnet-Path-Controls |
+|------|------|------|
+| Method #1: Silent	| Disable stimulation and reward-modulated STDP; preserve simulation and decoding	| Skip stimulation; preserve recording, decoding and game updates |
+| Method #2: Sensory only	| Keep state encoding, disable performance-dependent random noise and reward modulation	| Keep state-encoding waveform, remove performance-dependent waveform switching |
+| Method #3: Rest	| Run spontaneous neural simulation without stimulation or reward modulation | Record spontaneous activity without sending stimulation; optionally decode into a virtual game |
 
 ## Three control modes (full Brian2 and hardware paths)
 
