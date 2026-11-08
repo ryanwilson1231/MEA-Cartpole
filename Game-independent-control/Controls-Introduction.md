@@ -1,9 +1,0 @@
-# Game-Independent Controls
-Modify the Main Game code to decouple feedback stimulation from game outcomes, then compare training performance with that under outcome-dependent feedback to assess the role of reward/punishment contingency in learning. 
-
-## Control Methods (modified version from Main Game Codes)
-| Control	| Brian2-Path --> Brian2-Path-Controls	| Hardware-Pythonnet-Path --> Hardware-Pythonnet-Path-Controls |
-|------|------|------|
-| Method #1: Silent	| Disable stimulation and reward-modulated STDP; preserve simulation and decoding	| Skip stimulation; preserve recording, decoding and game updates |
-| Method #2: Sensory only	| Keep state encoding, disable performance-dependent random noise and reward modulation	| Keep state-encoding waveform, remove performance-dependent waveform switching |
-| Method #3: Rest	| Run spontaneous neural simulation without stimulation or reward modulation | Record spontaneous activity without sending stimulation; optionally decode into a virtual game |
