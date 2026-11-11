@@ -35,7 +35,13 @@ class LatencyTest
     static readonly List<double> callbackDurations = new List<double>();
     static readonly List<double> callbackTimes     = new List<double>();
     static readonly List<int>    frameCounts       = new List<int>();
-    static int[,] dataBuffer = new int[NUM_CHANNELS, 2500];
+    // Latest 100 ms callback per channel: THRESHOLD (5,000) samples at 50 kHz, in uV.
+    static double[,] dataBuffer = new double[NUM_CHANNELS, THRESHOLD];
+
+    // uV per raw AD unit. Overwritten in Connect() from GetResolutionPerDigit;
+    // 0.1042 is the fallback if that query fails or returns something implausible.
+    const double FALLBACK_UV_PER_DIGIT = 0.1042;
+    static double dynamicConversionFactor = FALLBACK_UV_PER_DIGIT;
 
     // recent frames on the watched channels, for artifact search
     class Snapshot { public double T; public Dictionary<int,int[]> Watch; }
@@ -123,6 +129,8 @@ class LatencyTest
         Console.WriteLine("  Channel layout: {0} analog, {1} digital, {2} in block",
                           analog, digital, cib);
 
+        QueryVoltageResolution();
+
         dacq.ChannelBlock.SetSelectedChannels(
             channelsInBlock / 2, QUEUE_SIZE, THRESHOLD,
             SampleSizeNet.SampleSize32Signed,
@@ -131,6 +139,37 @@ class LatencyTest
         dacq.ChannelBlock.SetCommonThreshold(THRESHOLD);
         dacq.ChannelBlock.SetCheckChecksum((uint)checksum, (uint)timestamp);
         return true;
+    }
+
+    // Ask the recording ADC how many volts one AD unit is worth.
+    // ASSUMPTION (unverified until the rig is powered): resUnit is a power-of-ten
+    // exponent relative to volts, so uV/digit = res * 10^(resUnit + 6).
+    // The raw values are printed so the first powered run can confirm or refute this.
+    static void QueryVoltageResolution()
+    {
+        try
+        {
+            int res, resUnit;
+            uint status = dacq.GetResolutionPerDigit(
+                0, DacqGroupChannelEnumNet.HeadstageElectrodeGroup, out res, out resUnit);
+            Console.WriteLine("  GetResolutionPerDigit: status={0} res={1} resUnit={2}",
+                              status, res, resUnit);
+
+            double uv = res * Math.Pow(10, resUnit + 6);
+            if (status != 0)
+                Console.WriteLine("  Non-zero status; keeping fallback.");
+            else if (!(uv >= 0.001 && uv <= 100.0))
+                Console.WriteLine("  Computed {0:G4} uV/digit is outside 0.001-100 uV; " +
+                                  "resUnit is probably not a power-of-ten exponent. Keeping fallback.", uv);
+            else
+                dynamicConversionFactor = uv;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("  GetResolutionPerDigit failed: " + ex.Message);
+        }
+        Console.WriteLine("  Using {0:F4} uV per AD unit{1}", dynamicConversionFactor,
+                          dynamicConversionFactor == FALLBACK_UV_PER_DIGIT ? " (FALLBACK)" : "");
     }
 
     // ------------------------------------------------------------ callback
@@ -150,9 +189,9 @@ class LatencyTest
                 int[] frames = d.ChannelBlock.ReadFramesI32(i, 0, numFrames, out framesRet);
                 if (framesRet <= 0 || frames == null) continue;
 
-                int take = Math.Min(2500, frames.Length);
-                int off  = frames.Length - take;
-                for (int k = 0; k < take; k++) dataBuffer[i, k] = frames[off + k];
+                // Keep every sample of the 100 ms read, scaled to uV.
+                int take = Math.Min(Math.Min(THRESHOLD, framesRet), frames.Length);
+                for (int k = 0; k < take; k++) dataBuffer[i, k] = frames[k] * dynamicConversionFactor;
 
                 if (Array.IndexOf(WatchChannels, i) >= 0) watch[i] = frames;
             }
@@ -193,7 +232,7 @@ class LatencyTest
             unchecked
             {
                 for (int i = 0; i < NUM_CHANNELS; i++)
-                    for (int k = 0; k < 2500; k += 97) h = h * 31 + dataBuffer[i, k];
+                    for (int k = 0; k < THRESHOLD; k += 97) h = h * 31 + (int)dataBuffer[i, k];
             }
             hashes.Add(h);
             reads++;
