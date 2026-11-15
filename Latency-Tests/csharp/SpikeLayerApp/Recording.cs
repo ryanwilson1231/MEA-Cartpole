@@ -151,12 +151,19 @@ class Recording
     // Absolute frame -> sample index in the session's .bin file.
     public long SessionSample(long absFrame) { lock (sync) return absFrame - sessionStart; }
 
-    public void LogWindow(uint window, long firstSample, int nSamples, Piece[] left, Piece[] right, int[] counts)
+    public void LogWindow(uint window, long firstSample, int nSamples, Piece[] left, Piece[] right, int[] counts,
+                          double[] noiseUv)
     {
+        // noise_uv = each electrode's sigma in this window (threshold was -5 x sigma).
+        // Kept for analysis only; nothing reads it back.
+        var inv = CultureInfo.InvariantCulture;
+        var noise = new string[noiseUv == null ? 0 : noiseUv.Length];
+        for (int i = 0; i < noise.Length; i++) noise[i] = noiseUv[i].ToString("F3", inv);
         var sb = new StringBuilder();
-        sb.AppendFormat(CultureInfo.InvariantCulture,
-                        "{{\"window\": {0}, \"first_sample\": {1}, \"n_samples\": {2}, \"left\": {3}, \"right\": {4}, \"counts\": [{5}]}}",
-                        window, firstSample, nSamples, PiecesJson(left), PiecesJson(right), string.Join(", ", counts));
+        sb.AppendFormat(inv,
+                        "{{\"window\": {0}, \"first_sample\": {1}, \"n_samples\": {2}, \"left\": {3}, \"right\": {4}, \"counts\": [{5}], \"noise_uv\": [{6}]}}",
+                        window, firstSample, nSamples, PiecesJson(left), PiecesJson(right),
+                        string.Join(", ", counts), string.Join(", ", noise));
         lock (sync) windowLog.Add(sb.ToString());
     }
 

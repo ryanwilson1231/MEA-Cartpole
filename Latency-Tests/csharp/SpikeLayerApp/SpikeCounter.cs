@@ -33,27 +33,32 @@ static class SpikeCounter
     };
 
     // Count spikes on every channel for the window [start, start + n) in absolute frames.
+    // noiseUv = each channel's noise level (sigma, uV); the threshold was -5 x this.
     // Returns null if the data (including margins) isn't in memory.
-    public static int[] CountWindow(Recording rec, long start, int n, bool[] mask)
+    public static int[] CountWindow(Recording rec, long start, int n, bool[] mask, out double[] noiseUv)
     {
         if (rec.SampleRate != 50000) throw new NotSupportedException("filter coefficients are for 50 kHz");
         int margin = rec.SampleRate * MARGIN_MS / 1000;
         int refractory = rec.SampleRate * REFRACTORY_MS / 1000;
         var counts = new int[Recording.CHANNELS];
+        var noise = new double[Recording.CHANNELS];
         bool missing = false;
 
         Parallel.For(0, Recording.CHANNELS, ch =>
         {
             var x = new double[n + 2 * margin];
             if (!rec.CopyUv(ch, start - margin, x.Length, x)) { missing = true; return; }
-            counts[ch] = CountChannel(x, margin, n, mask, refractory);
+            counts[ch] = CountChannel(x, margin, n, mask, refractory, out noise[ch]);
         });
+        noiseUv = noise;
         return missing ? null : counts;
     }
 
-    // x = window with `margin` extra samples on each side.
-    public static int CountChannel(double[] x, int margin, int n, bool[] mask, int refractory)
+    // x = window with `margin` extra samples on each side. Overwritten (bridged).
+    // noise = sigma of the filtered window (0 if it couldn't be estimated).
+    public static int CountChannel(double[] x, int margin, int n, bool[] mask, int refractory, out double noise)
     {
+        noise = 0;
         BridgeMasked(x, margin, n, mask);
 
         // Remove the offset first so the filter doesn't start with a big step.
@@ -70,7 +75,7 @@ static class SpikeCounter
         int m = 0;
         for (int k = 0; k < n; k++) if (!mask[k]) abs[m++] = Math.Abs(y[margin + k]);
         if (m == 0) return 0;
-        double noise = Median(abs, m) / 0.6745;
+        noise = Median(abs, m) / 0.6745;
         if (noise <= 0) return 0;
         double thr = -THRESHOLD_SD * noise;
 

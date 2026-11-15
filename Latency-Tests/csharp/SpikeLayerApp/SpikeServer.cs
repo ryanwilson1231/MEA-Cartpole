@@ -133,7 +133,7 @@ class SpikeServer
         if (n == 0)                             // nothing to play, nothing to record
         {
             firstSample = rec.SessionSample(currentFrame());
-            rec.LogWindow(window, firstSample, 0, left, right, counts);
+            rec.LogWindow(window, firstSample, 0, left, right, counts, null);
             return true;
         }
 
@@ -150,13 +150,14 @@ class SpikeServer
         }
 
         var mask = WaveRules.SpikeMask(left, right, n, rec.SampleRate, SpikeCounter.MASK_AFTER_US);
-        counts = SpikeCounter.CountWindow(rec, start, n, mask);
+        double[] noise;
+        counts = SpikeCounter.CountWindow(rec, start, n, mask, out noise);
         if (counts == null)
         {
             Refuse("window " + window + ": samples were no longer in memory when counting");
             return false;
         }
-        rec.LogWindow(window, firstSample, n, left, right, counts);
+        rec.LogWindow(window, firstSample, n, left, right, counts, noise);
         return true;
     }
 

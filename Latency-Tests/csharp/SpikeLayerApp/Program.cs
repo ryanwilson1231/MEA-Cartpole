@@ -67,6 +67,14 @@ class LatencyTest
     {
         if (args.Contains("--serve")) return Serve();
 
+        // "3. Detect spikes" check: re-count a saved session, then run compare_counts.py
+        int count = Array.IndexOf(args, "--count");
+        if (count >= 0)
+        {
+            if (count + 1 >= args.Length) { Console.WriteLine("  usage: SpikeLayerApp.exe --count sessions/NAME [--grid]"); return 1; }
+            return OfflineCount.Run(args[count + 1], args.Contains("--grid"));
+        }
+
         // "2. Save raw data":  SpikeLayerApp.exe --save NAME [--seconds 60]
         int save = Array.IndexOf(args, "--save");
         if (save >= 0)

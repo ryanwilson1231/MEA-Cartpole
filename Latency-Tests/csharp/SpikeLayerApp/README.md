@@ -12,6 +12,7 @@ compiles on a Mac, but it only runs on the rig.
 dotnet build -c Release
 SpikeLayerApp.exe --serve            # spike server on 127.0.0.1:5005 (Ctrl+C to stop)
 SpikeLayerApp.exe --save NAME --seconds 60   # record to sessions/NAME.bin + .json, no game
+SpikeLayerApp.exe --count sessions/NAME [--grid]   # re-count a saved file -> NAME_counts_csharp.csv
 SpikeLayerApp.exe --minutes 10       # 10-minute recording check, prints PASS/FAIL
 SpikeLayerApp.exe [--stim]           # Ryan's latency test (record-only, + round trip)
 ```
@@ -78,6 +79,20 @@ Per electrode, over the window plus 10 ms margins on each side:
 3. Noise = median(|x|) / 0.6745 over the unmasked window.
 4. Count downward crossings of −5 × noise. Skip masked samples, and anything within 1 ms of the last spike.
 
+Each window's 60 noise levels (sigma, µV) are saved as `noise_uv` next to its
+`counts` in the session .json, for analysis only.
+
+**Checking C# against Python** on the same saved file:
+
+```
+SpikeLayerApp.exe --count sessions/NAME     # C# counts (same code as live)
+python compare_counts.py sessions/NAME      # Python (scipy) counts the same windows, compares
+```
+
+A `--serve` session is re-counted window by window with its pulse masks; a
+`--save` file is cut into 100 ms windows. `compare_counts.py` holds the Python copy
+of the method (`count_window`).
+
 Step 1 matters: without it, the backwards filter pass spreads each artifact
 up to 4 ms *before* the pulse. On fake data, that added 2–3 false spikes per
 pulse on every electrode.
@@ -89,6 +104,9 @@ pulse on every electrode.
   returns. It doesn't include the USB transfer delay or the stimulator's own
   start-up time. The fix is to read the stimulator's timing stream from the
   recording (Round-1 T3 fix 5). Measure the offset on saline first.
+- **Pulses in the 10 ms margins aren't masked.** The mask only covers the window
+  itself. A pulse in the last 10 ms of the previous window, or a back-to-back
+  next window, can still leak false spikes into the edges of the window.
 - **The 2 ms mask is a placeholder.** Tune it after saline (`MASK_AFTER_US`).
 - **Noise is re-estimated in every window.** T5 fix 3 says to calibrate it
   once per session instead.
