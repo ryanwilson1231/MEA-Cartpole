@@ -1,9 +1,11 @@
 // Holds the last few seconds of every channel in memory (for spike counting),
 // and, while a session is open, writes everything to sessions/<name>.bin + .json.
 //
-// .bin layout: raw AD counts, int32 little-endian, frame-major:
+// .bin layout: raw AD counts, int32 little-endian, sample-major:
 //   sample 0 ch 0..59, sample 1 ch 0..59, ...
-// Multiply by uv_per_digit from the .json to get microvolts.
+// Multiply by uv_per_count from the .json to get microvolts. The .json uses the
+// same keys as Saline-Test/mea_kit/hardware/recorder.py (fs, n_streams,
+// analog_streams, uv_per_count), so load_recording() reads it directly.
 //
 // Nothing here touches McsUsbNet.dll.
 
@@ -188,14 +190,20 @@ class Recording
         if (finished) sb.AppendFormat(inv, "  \"ended\": \"{0:yyyy-MM-ddTHH:mm:ss.fffzzz}\",\n", DateTime.Now);
         sb.AppendFormat(inv, "  \"complete\": {0},\n", finished ? "true" : "false");
         sb.AppendFormat(inv, "  \"bin_file\": \"{0}\",\n", Escape(Path.GetFileName(binPath)));
+        // Same keys as Saline-Test/mea_kit/hardware/recorder.py, so
+        // mea_kit.common.recording.load_recording() opens this file as-is.
+        sb.AppendFormat(inv, "  \"fs\": {0},\n", SampleRate);
+        sb.AppendFormat(inv, "  \"n_streams\": {0},\n", CHANNELS);
+        if (finished) sb.AppendFormat(inv, "  \"n_samples\": {0},\n", samples);
         sb.Append("  \"dtype\": \"int32\",\n");
         sb.Append("  \"byte_order\": \"little\",\n");
-        sb.Append("  \"layout\": \"frame-major: for each sample, channels 0..59\",\n");
-        sb.AppendFormat(inv, "  \"n_channels\": {0},\n", CHANNELS);
-        sb.AppendFormat(inv, "  \"sample_rate_hz\": {0},\n", SampleRate);
-        sb.AppendFormat(inv, "  \"uv_per_digit\": {0:R},\n", uvPerDigit);
-        sb.AppendFormat(inv, "  \"uv_per_digit_is_fallback\": {0},\n", uvIsFallback ? "true" : "false");
-        if (finished) sb.AppendFormat(inv, "  \"n_samples\": {0},\n", samples);
+        sb.Append("  \"layout\": \"sample-major\",\n");
+        sb.Append("  \"analog_streams\": [");
+        for (int ch = 0; ch < CHANNELS; ch++) sb.Append(ch == 0 ? "" : ", ").Append(ch);
+        sb.Append("],\n");
+        sb.AppendFormat(inv, "  \"uv_per_count\": {0:R},\n", uvPerDigit);
+        sb.AppendFormat(inv, "  \"uv_per_count_is_fallback\": {0},\n", uvIsFallback ? "true" : "false");
+        if (finished) sb.AppendFormat(inv, "  \"wall_seconds\": {0:F3},\n", (DateTime.Now - sessionStarted).TotalSeconds);
         sb.Append("  \"windows\": [");
         for (int i = 0; i < windowLog.Count; i++) sb.Append(i == 0 ? "\n    " : ",\n    ").Append(windowLog[i]);
         sb.Append(windowLog.Count > 0 ? "\n  ]\n}\n" : "]\n}\n");

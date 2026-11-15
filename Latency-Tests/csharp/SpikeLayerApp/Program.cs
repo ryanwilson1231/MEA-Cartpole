@@ -67,6 +67,14 @@ class LatencyTest
     {
         if (args.Contains("--serve")) return Serve();
 
+        // "2. Save raw data":  SpikeLayerApp.exe --save NAME [--seconds 60]
+        int save = Array.IndexOf(args, "--save");
+        if (save >= 0)
+        {
+            if (save + 1 >= args.Length) { Console.WriteLine("  usage: SpikeLayerApp.exe --save NAME [--seconds 60]"); return 1; }
+            return SaveSession(args[save + 1], ArgInt(args, "--seconds", 60));
+        }
+
         bool doStim    = args.Contains("--stim");
         int  stimSteps = ArgInt(args, "--stim-steps", 100);
         int  seconds   = ArgInt(args, "--seconds", 10);
@@ -324,6 +332,80 @@ class LatencyTest
             try { dacq.Disconnect(); } catch { }
         }
         return 0;
+    }
+
+    // ------------------------------------------------------------- --save
+
+    // Records `seconds` of all 60 electrodes straight to sessions/<name>.bin + .json
+    // (no game, no stimulation). Open it in Python with check_recording.py.
+    // Exit code 0 = all samples saved with no errors, 2 = something went wrong.
+    static int SaveSession(string name, int seconds)
+    {
+        Console.WriteLine(new string('=', 70));
+        Console.WriteLine("SAVE RAW DATA - {0} s to sessions/{1}.bin + .json", seconds, name);
+        Console.WriteLine(new string('=', 70));
+
+        if (seconds <= 0) { Console.WriteLine("  --seconds must be at least 1"); return 1; }
+        if (!Connect()) return 1;
+        if (channelsInBlock / 2 < NUM_CHANNELS)
+        {
+            Console.WriteLine("  Only {0} data streams; need {1}.", channelsInBlock / 2, NUM_CHANNELS);
+            try { dacq.Disconnect(); } catch { }
+            return 1;
+        }
+
+        recording = new Recording(SAMPLERATE, 12, dynamicConversionFactor,
+                                  dynamicConversionFactor == FALLBACK_UV_PER_DIGIT);
+        string dir = Path.Combine(Environment.CurrentDirectory, "sessions");
+        string why = recording.StartSession(name, dir);
+        if (why != null)
+        {
+            Console.WriteLine("  REFUSED: " + why);
+            try { dacq.Disconnect(); } catch { }
+            return 1;
+        }
+
+        var stop = new ManualResetEvent(false);
+        Console.CancelKeyPress += (s, e) => { e.Cancel = true; Console.WriteLine("  Stopping early..."); stop.Set(); };
+
+        double t0 = Now();
+        double nextStatus = t0 + 10000.0;
+        bool stoppedEarly = false;
+        dacq.StartDacq();
+        try
+        {
+            while (Now() - t0 < seconds * 1000.0)
+            {
+                if (stop.WaitOne(100)) { stoppedEarly = true; break; }
+                if (Now() >= nextStatus)
+                {
+                    Console.WriteLine("  {0,4:F0} s  saved {1:N0} samples  errors dev/cb/short {2}/{3}/{4}",
+                                      (Now() - t0) / 1000.0, recording.Total, deviceErrors, callbackErrors, shortReads);
+                    nextStatus += 10000.0;
+                }
+            }
+        }
+        finally
+        {
+            try { dacq.StopDacq(0); } catch { }
+            recording.EndSession();
+            try { dacq.Disconnect(); } catch { }
+        }
+
+        long saved = recording.Total;
+        long expected = (long)seconds * SAMPLERATE;
+        Console.WriteLine();
+        Console.WriteLine("  {0,-22} {1:N0} ({2:F2} s), expected {3:N0}", "samples saved", saved, saved / (double)SAMPLERATE, expected);
+        Console.WriteLine("  {0,-22} {1}", "uV per AD count", dynamicConversionFactor.ToString("F4") +
+                          (dynamicConversionFactor == FALLBACK_UV_PER_DIGIT ? " (FALLBACK)" : ""));
+        Console.WriteLine("  {0,-22} {1} / {2} / {3}", "errors dev/cb/short", deviceErrors, callbackErrors, shortReads);
+        Console.WriteLine("  Check it:  python check_recording.py sessions/{0}", name);
+
+        // A callback hands over up to 100 ms at a time, so allow 0.2 s of slack.
+        bool ok = !stoppedEarly && deviceErrors == 0 && callbackErrors == 0 && shortReads == 0
+                  && saved >= expected - SAMPLERATE / 5;
+        Console.WriteLine("\n  RESULT: {0}", ok ? "OK" : "PROBLEM (see above)");
+        return ok ? 0 : 2;
     }
 
     // Frame being recorded right now = frames already handed to `recording`

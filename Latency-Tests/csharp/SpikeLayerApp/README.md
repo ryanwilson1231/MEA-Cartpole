@@ -11,6 +11,7 @@ compiles on a Mac, but it only runs on the rig.
 ```
 dotnet build -c Release
 SpikeLayerApp.exe --serve            # spike server on 127.0.0.1:5005 (Ctrl+C to stop)
+SpikeLayerApp.exe --save NAME --seconds 60   # record to sessions/NAME.bin + .json, no game
 SpikeLayerApp.exe --minutes 10       # 10-minute recording check, prints PASS/FAIL
 SpikeLayerApp.exe [--stim]           # Ryan's latency test (record-only, + round trip)
 ```
@@ -43,14 +44,30 @@ before SESS, and won't overwrite an existing session.
 
 ## Files
 
-`sessions/<name>.bin`: raw AD counts, int32 little-endian, frame-major (for
-each sample, channels 0–59). `sessions/<name>.json`: sample rate,
-`uv_per_digit` (multiply counts by this for µV) and, once the session closes,
-every window (first sample, length, both waves, the 60 counts).
+Same format as Abbas's Python recorder (`Saline-Test/mea_kit/hardware/recorder.py`
+on the Abbas-changes branch), so its `load_recording()` opens them directly.
+
+`sessions/<name>.bin`: raw AD counts, int32 little-endian, sample-major (for
+each sample, channels 0-59). `sessions/<name>.json`: `fs`, `n_streams`,
+`analog_streams`, `uv_per_count` (multiply counts by this for µV) and, once the
+session closes, `n_samples` and every window (first sample, length, both waves,
+the 60 counts). The .json is written when the session starts too, so even a
+crashed session can be opened.
+
+Check a file (this is the "60-second file opens and plots" check):
+
+```
+python check_recording.py sessions/NAME      # prints OK/PROBLEMS, saves sessions/NAME.png
+```
+
+It needs `Saline-Test/mea_kit/common/recording.py`; if it's not in your checkout:
+`git checkout origin/Abbas-changes -- Saline-Test/mea_kit`.
+
+Without mea_kit:
 
 ```python
 raw = np.fromfile("sessions/x.bin", dtype="<i4").reshape(-1, 60)
-uv = raw * json.load(open("sessions/x.json"))["uv_per_digit"]
+uv = raw * json.load(open("sessions/x.json"))["uv_per_count"]
 ```
 
 ## Spike counting (`SpikeCounter.cs`)
