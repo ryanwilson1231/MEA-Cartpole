@@ -12,7 +12,6 @@ compiles on a Mac, but it only runs on the rig.
 dotnet build -c Release
 SpikeLayerApp.exe --serve            # spike server on 127.0.0.1:5005 (Ctrl+C to stop)
 SpikeLayerApp.exe --save NAME --seconds 60   # record to sessions/NAME.bin + .json, no game
-SpikeLayerApp.exe --count sessions/NAME [--grid]   # re-count a saved file -> NAME_counts_csharp.csv
 SpikeLayerApp.exe --minutes 10       # 10-minute recording check, prints PASS/FAIL
 SpikeLayerApp.exe [--stim]           # Ryan's latency test (record-only, + round trip)
 ```
@@ -58,7 +57,7 @@ crashed session can be opened.
 Check a file (this is the "60-second file opens and plots" check):
 
 ```
-python check_recording.py sessions/NAME      # prints OK/PROBLEMS, saves sessions/NAME.png
+python tests/check_recording.py sessions/NAME   # prints OK/PROBLEMS, saves sessions/NAME.png
 ```
 
 It needs `Saline-Test/mea_kit/common/recording.py`; if it's not in your checkout:
@@ -82,11 +81,13 @@ Per electrode, over the window plus 10 ms margins on each side:
 Each window's 60 noise levels (sigma, µV) are saved as `noise_uv` next to its
 `counts` in the session .json, for analysis only.
 
-**Checking C# against Python** on the same saved file:
+**Checking C# against Python** (one-time tests in `tests/`, not built into the
+app and never run during a session):
 
 ```
-SpikeLayerApp.exe --count sessions/NAME     # C# counts (same code as live)
-python compare_counts.py sessions/NAME      # Python (scipy) counts the same windows, compares
+python tests/check_recording.py sessions/NAME   # file opens with load_recording() and plots
+dotnet run --project tests -- sessions/NAME     # C# counts (same counting code as live)
+python tests/compare_counts.py sessions/NAME    # Python (scipy) counts the same windows, compares
 ```
 
 A `--serve` session is re-counted window by window with its pulse masks; a

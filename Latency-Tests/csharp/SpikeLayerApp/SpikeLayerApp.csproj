@@ -17,4 +17,8 @@
     <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.3" PrivateAssets="all" />
   </ItemGroup>
 
+  <!-- tests/ is a separate one-time check project; keep it out of the app -->
+  <ItemGroup>
+    <Compile Remove="tests/**" />
+  </ItemGroup>
 </Project>

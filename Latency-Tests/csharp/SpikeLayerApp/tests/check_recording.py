@@ -2,7 +2,7 @@
 Check a session saved by the C# app ("2. Save raw data"):
 
     SpikeLayerApp.exe --save test_60s --seconds 60
-    python check_recording.py sessions/test_60s
+    python tests/check_recording.py sessions/test_60s
 
 Opens the file with load_recording() from Abbas's
 Saline-Test/mea_kit/common/recording.py (branch Abbas-changes). That's the check:

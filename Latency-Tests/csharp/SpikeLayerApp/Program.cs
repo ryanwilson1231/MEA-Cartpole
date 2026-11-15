@@ -67,14 +67,6 @@ class LatencyTest
     {
         if (args.Contains("--serve")) return Serve();
 
-        // "3. Detect spikes" check: re-count a saved session, then run compare_counts.py
-        int count = Array.IndexOf(args, "--count");
-        if (count >= 0)
-        {
-            if (count + 1 >= args.Length) { Console.WriteLine("  usage: SpikeLayerApp.exe --count sessions/NAME [--grid]"); return 1; }
-            return OfflineCount.Run(args[count + 1], args.Contains("--grid"));
-        }
-
         // "2. Save raw data":  SpikeLayerApp.exe --save NAME [--seconds 60]
         int save = Array.IndexOf(args, "--save");
         if (save >= 0)
@@ -407,7 +399,7 @@ class LatencyTest
         Console.WriteLine("  {0,-22} {1}", "uV per AD count", dynamicConversionFactor.ToString("F4") +
                           (dynamicConversionFactor == FALLBACK_UV_PER_DIGIT ? " (FALLBACK)" : ""));
         Console.WriteLine("  {0,-22} {1} / {2} / {3}", "errors dev/cb/short", deviceErrors, callbackErrors, shortReads);
-        Console.WriteLine("  Check it:  python check_recording.py sessions/{0}", name);
+        Console.WriteLine("  Check it:  python tests/check_recording.py sessions/{0}", name); 
 
         // A callback hands over up to 100 ms at a time, so allow 0.2 s of slack.
         bool ok = !stoppedEarly && deviceErrors == 0 && callbackErrors == 0 && shortReads == 0

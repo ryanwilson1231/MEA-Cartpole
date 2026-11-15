@@ -1,8 +1,8 @@
 """
 Check the C# spike counter against Python on the same saved file ("3. Detect spikes").
 
-    SpikeLayerApp.exe --count sessions/NAME       # C# counts -> sessions/NAME_counts_csharp.csv
-    python compare_counts.py sessions/NAME        # Python counts the same windows, compares
+    dotnet run --project tests -- sessions/NAME   # C# counts -> sessions/NAME_counts_csharp.csv
+    python tests/compare_counts.py sessions/NAME       # Python counts the same windows, compares
 
 count_window() below is the Python copy of SpikeCounter.CountChannel in C#,
 built from scipy (butter + sosfilt). Same method:

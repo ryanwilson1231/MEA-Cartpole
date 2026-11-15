@@ -1,11 +1,11 @@
-// SpikeLayerApp.exe --count sessions/NAME [--grid]
+// ONE-TIME TEST, separate from the app (tests/CountCheck.csproj):
+//   dotnet run --project tests -- sessions/NAME [--grid]
 //
 // Re-counts spikes in a SAVED session with exactly the same code the live
 // server uses (SpikeCounter.CountChannel), and writes
 // sessions/NAME_counts_csharp.csv: one row per window, 60 counts + 60 noise
 // levels (sigma, uV). compare_counts.py then counts the same file in Python
-// and checks the two agree. This is a test of the C# counter; it never runs
-// during a live session.
+// and checks the two agree. Not compiled into SpikeLayerApp.exe.
 //
 // Which windows:
 //   - a --serve session (its .json lists windows): those windows, with the same
@@ -24,6 +24,12 @@ using System.Text.RegularExpressions;
 
 static class OfflineCount
 {
+    static int Main(string[] args)
+    {
+        if (args.Length < 1) { Console.WriteLine("usage: dotnet run --project tests -- sessions/NAME [--grid]"); return 1; }
+        return Run(args[0], Array.IndexOf(args, "--grid") >= 0);
+    }
+
     public const int GRID_MS = 100;
 
     class Win { public uint Id; public long First; public int N; public Piece[] Left, Right; }
@@ -97,7 +103,7 @@ static class OfflineCount
 
         Console.WriteLine("  {0}: {1} windows counted, {2} skipped (no room for the 10 ms margins)", source, done, skipped);
         Console.WriteLine("  wrote " + outPath);
-        Console.WriteLine("  compare:  python compare_counts.py " + prefix);
+        Console.WriteLine("  compare:  python tests/compare_counts.py " + prefix);
         return done > 0 ? 0 : 1;
     }
 
