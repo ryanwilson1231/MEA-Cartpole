@@ -46,6 +46,11 @@ class Brian2CartPoleIntegration:
         return pole_angle, pole_angular_velocity, reward, done
 
     def train(self, num_episodes=100, render=False):
+
+###Initialize the counters before the episode loop 51-52
+        consecutive_successes = 0
+        decision_made = False
+        
         for episode in range(num_episodes):
             state = self.initialize_training()
             done = False
@@ -56,6 +61,10 @@ class Brian2CartPoleIntegration:
                 _, _, _, done = self.run_single_frame()
 
             print(f"Episode {episode+1}/{num_episodes}, Reward: {self.total_reward}, Length: {self.current_episode_length}")
+
+###Add the decision logic after each episode 66-67
+            steps_this_episode = self.current_episode_length
+            physics = self.env.unwrapped
 
         self.env.close()
         self.plot_training_results()
