@@ -35,10 +35,10 @@ class Stimulator : IStimulator, IDisposable
             stg.SetElectrodeMode(HEADSTAGE, e, ElectrodeModeEnumNet.emAutomatic);
             stg.SetElectrodeEnable(HEADSTAGE, e, 0, true);
             stg.SetElectrodeDacMux(HEADSTAGE, e, 0, generator);
-            stg.SetEnableAmplifierProtectionSwitch(HEADSTAGE, e, false);
+            stg.SetEnableAmplifierProtectionSwitch(HEADSTAGE, e, true);    // as in MCS's example (mea_device.py has false)
             stg.SetBlankingEnable(HEADSTAGE, e, true);      // hide stim artifacts in the recording
         }
-        stg.SetVoltageMode(0);
+        stg.SetVoltageMode();          // no argument = every generator channel (SetVoltageMode(0) only set the left one)
         stg.SetupTrigger(0, new uint[] { 255 }, new uint[] { 255 }, new uint[] { 1 });
     }
 
@@ -74,6 +74,7 @@ class Stimulator : IStimulator, IDisposable
 
     public void Dispose()
     {
+        try { stg.SendStop(1); } catch { }       // stop any wave still playing before letting go
         try { stg.Disconnect(); } catch { }
     }
 }
