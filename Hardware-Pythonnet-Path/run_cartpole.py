@@ -62,7 +62,12 @@ def run_integrated_dishbrain():
         episode_steps = []
         episode_rewards = []
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
- 
+
+### Initialize the counters before the episode loop (#67-68) ###
+        consecutive_successes = 0
+        decision_made = False
+### - - - - - - - - - - - - - - - - ###
+     
         for episode in range(episodes):
             print(f"Starting Episode {episode + 1}/{episodes}")
             gym_api.initialize_training()
@@ -84,7 +89,37 @@ def run_integrated_dishbrain():
  
             episode_steps.append(step_count)
             episode_rewards.append(gym_api.total_reward)
- 
+         
+ ### Add the decision logic after each episode (#94-119) ###
+            steps_this_episode = step_count
+            physics = gym_api.env.unwrapped
+         
+            if not decision_made:
+                if steps_this_episode >= 50:
+                    consecutive_successes += 1
+                else:
+                    consecutive_successes = 0
+                # Count consecutive qualifying episodes, not total successes.
+
+                if consecutive_successes >= 3:
+                    choice = input(
+                        "1: Force = 5 N; 2: Cart mass = 2 kg; "
+                        "3: Keep original physics: "
+                    )
+
+                    if choice == "1":
+                        physics.force_mag = 5.0
+                        # Change force only. Cart mass remains 1 kg.
+                    elif choice == "2":
+                        physics.masscart = 2.0
+                        physics.total_mass = physics.masscart + physics.masspole
+                        # Update the cached total mass. Force remains 10 N.
+
+                    decision_made = True
+                    print(f"Physics decision after episode {episode + 1}: {choice}")
+  ### Apply the selected condition from the next episode onward. 
+  ### - - - - - - - - - - - - - - - - - - ###       
+         
             time.sleep(1.0)
  
         save_episode_data(episode_steps, episode_rewards, timestamp)
